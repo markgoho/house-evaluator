@@ -29,12 +29,8 @@ service cloud.firestore {
 
     // Families collection
     match /families/{familyId} {
-      // Read: any family member OR anyone who is the owner of this family document
-      allow read: if isAuthenticated() && (
-                     resource.data.ownerId == request.auth.uid ||
-                     (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId)
-                  );
+      // Read: any authenticated user (needed to verify family exists when joining)
+      allow read: if isAuthenticated();
 
       // Create: authenticated users can create families (become owner)
       allow create: if isAuthenticated() &&
