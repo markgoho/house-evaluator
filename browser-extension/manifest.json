@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "House Evaluator Helper",
+  "version": "1.0.2",
+  "description": "Extract property data from listings and auto-fill House Evaluator",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.zillow.com/*"],
+      "js": ["content-scripts/zillow.js"]
+    },
+    {
+      "matches": ["*://*.redfin.com/*"],
+      "js": ["content-scripts/redfin.js"]
+    },
+    {
+      "matches": ["*://*.realtor.com/*"],
+      "js": ["content-scripts/realtor.js"]
+    }
+  ],
+  "host_permissions": [
+    "*://*.zillow.com/*",
+    "*://*.redfin.com/*",
+    "*://*.realtor.com/*"
+  ]
+}

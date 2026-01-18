@@ -20,12 +20,31 @@
 	);
 
 	onMount(async () => {
-		await loadHouse();
+		// Wait for user profile to initialize
+		if (!$userProfileStore.initialized) {
+			const unsubscribe = userProfileStore.subscribe((state) => {
+				if (state.initialized) {
+					unsubscribe();
+					loadHouse();
+				}
+			});
+		} else {
+			await loadHouse();
+		}
 	});
 
 	async function loadHouse() {
+		// Debug logging
+		console.log('User profile store state:', {
+			initialized: $userProfileStore.initialized,
+			profile: $userProfileStore.profile,
+			familyId: $userProfileStore.profile?.familyId,
+			houseId
+		});
+		console.log('Current auth UID:', $authStore.user?.uid);
+
 		if (!$userProfileStore.profile?.familyId || !houseId) {
-			error = 'No family ID or house ID found';
+			error = `No family ID or house ID found. Profile: ${JSON.stringify($userProfileStore.profile)}, House ID: ${houseId}`;
 			loading = false;
 			return;
 		}

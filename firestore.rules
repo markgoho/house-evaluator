@@ -29,8 +29,12 @@ service cloud.firestore {
 
     // Families collection
     match /families/{familyId} {
-      // Read: any family member can read family data
-      allow read: if isFamilyMember(familyId);
+      // Read: any family member OR anyone who is the owner of this family document
+      allow read: if isAuthenticated() && (
+                     resource.data.ownerId == request.auth.uid ||
+                     (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId)
+                  );
 
       // Create: authenticated users can create families (become owner)
       allow create: if isAuthenticated() &&
@@ -60,11 +64,11 @@ service cloud.firestore {
 
       // Criteria subcollection
       match /criteria/{criterionId} {
-        // Read: any family member
-        allow read: if isFamilyMember(familyId);
+        // Read: any family member or family owner
+        allow read: if isFamilyMember(familyId) || isFamilyOwner(familyId);
 
-        // Create: any family member
-        allow create: if isFamilyMember(familyId) &&
+        // Create: any family member or family owner (needed for initial setup)
+        allow create: if (isFamilyMember(familyId) || isFamilyOwner(familyId)) &&
                          request.resource.data.familyId == familyId;
 
         // Update: any family member

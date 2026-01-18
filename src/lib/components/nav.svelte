@@ -51,7 +51,12 @@
 
 			<div class="user-menu">
 				{#if $authStore.user.photoURL}
-					<img src={$authStore.user.photoURL} alt="Profile" class="user-avatar" />
+					<img
+						src={$authStore.user.photoURL}
+						alt="Profile"
+						class="user-avatar"
+						referrerpolicy="no-referrer"
+					/>
 				{/if}
 				<span class="user-name">{$authStore.user.displayName}</span>
 				<button onclick={handleSignOut} class="sign-out-btn">Sign Out</button>

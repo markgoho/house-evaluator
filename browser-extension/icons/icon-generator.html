@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator - House Evaluator Extension</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: #1976d2;
+      margin-bottom: 20px;
+    }
+    .instructions {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .icons-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .icon-box {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      display: block;
+      margin: 10px auto;
+    }
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1565c0;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏠 House Evaluator Extension - Icon Generator</h1>
+
+  <div class="instructions">
+    <h2>Instructions:</h2>
+    <ol>
+      <li>Click the "Download" button under each icon below</li>
+      <li>Save each icon to the <code>browser-extension/icons/</code> folder</li>
+      <li>Make sure the file names match: <code>icon16.png</code>, <code>icon48.png</code>, <code>icon128.png</code></li>
+    </ol>
+  </div>
+
+  <div class="icons-container">
+    <div class="icon-box">
+      <h3>16x16</h3>
+      <canvas id="icon16" width="16" height="16"></canvas>
+      <button onclick="downloadIcon('icon16', 16)">Download icon16.png</button>
+    </div>
+
+    <div class="icon-box">
+      <h3>48x48</h3>
+      <canvas id="icon48" width="48" height="48"></canvas>
+      <button onclick="downloadIcon('icon48', 48)">Download icon48.png</button>
+    </div>
+
+    <div class="icon-box">
+      <h3>128x128</h3>
+      <canvas id="icon128" width="128" height="128"></canvas>
+      <button onclick="downloadIcon('icon128', 128)">Download icon128.png</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <p><strong>Note:</strong> These are simple programmatically-generated icons. For a more professional look, consider designing custom icons using tools like Figma, Canva, or hiring a designer.</p>
+  </div>
+
+  <script>
+    // Draw a simple house icon on canvas
+    function drawHouseIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const scale = size / 16; // Base design on 16px
+
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+
+      // Background
+      ctx.fillStyle = '#1976d2';
+      ctx.fillRect(0, 0, size, size);
+
+      // House shape
+      ctx.fillStyle = 'white';
+
+      // Roof (triangle)
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.25); // top center
+      ctx.lineTo(size * 0.15, size * 0.5); // bottom left
+      ctx.lineTo(size * 0.85, size * 0.5); // bottom right
+      ctx.closePath();
+      ctx.fill();
+
+      // House body (rectangle)
+      ctx.fillRect(size * 0.2, size * 0.45, size * 0.6, size * 0.45);
+
+      // Door (small rectangle)
+      ctx.fillStyle = '#1976d2';
+      ctx.fillRect(size * 0.4, size * 0.65, size * 0.2, size * 0.25);
+
+      // Window (if size allows)
+      if (size >= 48) {
+        ctx.fillStyle = '#1976d2';
+        ctx.fillRect(size * 0.3, size * 0.55, size * 0.12, size * 0.12);
+        ctx.fillRect(size * 0.58, size * 0.55, size * 0.12, size * 0.12);
+      }
+    }
+
+    // Download canvas as PNG
+    function downloadIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = `icon${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Generate all icons on page load
+    window.onload = function() {
+      drawHouseIcon(document.getElementById('icon16'), 16);
+      drawHouseIcon(document.getElementById('icon48'), 48);
+      drawHouseIcon(document.getElementById('icon128'), 128);
+    };
+  </script>
+</body>
+</html>

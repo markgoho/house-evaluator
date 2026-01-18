@@ -25,6 +25,11 @@ function createUserProfileStore() {
 	// Listen to auth changes and subscribe to user profile
 	if (browser) {
 		authStore.subscribe(($authStore) => {
+			// Wait for auth to be initialized
+			if (!$authStore.initialized) {
+				return;
+			}
+
 			// Clean up previous listener
 			if (unsubscribe) {
 				unsubscribe();

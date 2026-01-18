@@ -2,13 +2,40 @@
 	import '../app.css';
 	import Nav from '$lib/components/nav.svelte';
 	import { authStore } from '$lib/stores/auth-store';
+	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let { children }: { children: any } = $props();
 
 	// Pages that don't require authentication
 	const publicPages = ['/login'];
 	const isPublicPage = $derived(publicPages.includes($page.url.pathname));
+
+	// Pages that don't require a family (setup page itself)
+	const noFamilyAllowed = ['/setup', '/login'];
+	const requiresFamily = $derived(!noFamilyAllowed.includes($page.url.pathname));
+
+	// Redirect to setup if user is logged in but has no family
+	onMount(() => {
+		const unsubscribe = userProfileStore.subscribe((state) => {
+			// Wait for stores to finish loading
+			if ($authStore.loading || !state.initialized) {
+				return;
+			}
+
+			// If user is logged in and on a page that requires family
+			if ($authStore.user && requiresFamily) {
+				// No profile exists OR profile has no familyId
+				if (!state.profile || state.profile.familyId === null || state.profile.familyId === undefined) {
+					goto('/setup');
+				}
+			}
+		});
+
+		return unsubscribe;
+	});
 </script>
 
 <div class="app">

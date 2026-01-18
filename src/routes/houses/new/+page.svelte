@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { authStore } from '$lib/stores/auth-store';
 	import { createHouse } from '$lib/services/house-service';
@@ -21,6 +23,70 @@
 	let price = $state<number | null>(null);
 	let listingUrl = $state('');
 	let notes = $state('');
+
+	// Parse URL parameters on mount to pre-fill form
+	onMount(() => {
+		const params = $page.url.searchParams;
+
+		// String fields
+		const addressParam = params.get('address');
+		if (addressParam) address = addressParam;
+
+		const cityParam = params.get('city');
+		if (cityParam) city = cityParam;
+
+		const stateParam = params.get('state');
+		if (stateParam) stateField = stateParam;
+
+		const zipCodeParam = params.get('zipCode');
+		if (zipCodeParam) zipCode = zipCodeParam;
+
+		const listingUrlParam = params.get('listingUrl');
+		if (listingUrlParam) listingUrl = listingUrlParam;
+
+		const notesParam = params.get('notes');
+		if (notesParam) notes = notesParam;
+
+		// Numeric fields - parse and validate
+		const priceParam = params.get('price');
+		if (priceParam) {
+			const parsed = Number.parseInt(priceParam, 10);
+			if (!Number.isNaN(parsed) && parsed > 0) price = parsed;
+		}
+
+		const squareFeetParam = params.get('squareFeet');
+		if (squareFeetParam) {
+			const parsed = Number.parseInt(squareFeetParam, 10);
+			if (!Number.isNaN(parsed) && parsed > 0) squareFeet = parsed;
+		}
+
+		const bedroomsParam = params.get('bedrooms');
+		if (bedroomsParam) {
+			const parsed = Number.parseInt(bedroomsParam, 10);
+			if (!Number.isNaN(parsed) && parsed >= 0) bedrooms = parsed;
+		}
+
+		const bathroomsParam = params.get('bathrooms');
+		if (bathroomsParam) {
+			const parsed = Number.parseFloat(bathroomsParam);
+			if (!Number.isNaN(parsed) && parsed >= 0) bathrooms = parsed;
+		}
+
+		const yearBuiltParam = params.get('yearBuilt');
+		if (yearBuiltParam) {
+			const parsed = Number.parseInt(yearBuiltParam, 10);
+			const currentYear = new Date().getFullYear();
+			if (!Number.isNaN(parsed) && parsed >= 1800 && parsed <= currentYear) {
+				yearBuilt = parsed;
+			}
+		}
+
+		const lotSizeParam = params.get('lotSize');
+		if (lotSizeParam) {
+			const parsed = Number.parseInt(lotSizeParam, 10);
+			if (!Number.isNaN(parsed) && parsed > 0) lotSize = parsed;
+		}
+	});
 
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
