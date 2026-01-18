@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user is a member of the family
+    function isFamilyMember(familyId) {
+      return isAuthenticated() &&
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.familyId == familyId;
+    }
+
+    // Helper: Check file size (max 5MB for photos)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Helper: Check file type (only images)
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    // House photos: families/{familyId}/houses/{houseId}/{filename}
+    match /families/{familyId}/houses/{houseId}/{filename} {
+      // Read: any authenticated user (for viewing shared houses)
+      allow read: if isAuthenticated();
+
+      // Write: only family members, must be valid image and size
+      allow write: if isFamilyMember(familyId) &&
+                      isImage() &&
+                      isValidSize();
+
+      // Delete: only family members
+      allow delete: if isFamilyMember(familyId);
+    }
+  }
+}

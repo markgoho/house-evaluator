@@ -1,18 +1,97 @@
-rules_version='2'
+rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      // This rule allows anyone with your database reference to view, edit,
-      // and delete all data in your database. It is useful for getting
-      // started, but it is configured to expire after 30 days because it
-      // leaves your app open to attackers. At that time, all client
-      // requests to your database will be denied.
-      //
-      // Make sure to write security rules for your app before that time, or
-      // else all client requests to your database will be denied until you
-      // update your rules.
-      allow read, write: if request.time < timestamp.date(2026, 2, 17);
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function: Check if user is a member of the specified family
+    function isFamilyMember(familyId) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId;
+    }
+
+    // Helper function: Check if user is the family owner
+    function isFamilyOwner(familyId) {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/families/$(familyId)).data.ownerId == request.auth.uid;
+    }
+
+    // Users collection - users can read all profiles, but only write their own
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false; // Users cannot delete their own profile
+    }
+
+    // Families collection
+    match /families/{familyId} {
+      // Read: any family member can read family data
+      allow read: if isFamilyMember(familyId);
+
+      // Create: authenticated users can create families (become owner)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.ownerId == request.auth.uid;
+
+      // Update: only family owner can update family
+      allow update: if isFamilyOwner(familyId);
+
+      // Delete: only family owner can delete family
+      allow delete: if isFamilyOwner(familyId);
+
+      // Houses subcollection
+      match /houses/{houseId} {
+        // Read: any family member
+        allow read: if isFamilyMember(familyId);
+
+        // Create: any family member
+        allow create: if isFamilyMember(familyId) &&
+                         request.resource.data.familyId == familyId;
+
+        // Update: any family member
+        allow update: if isFamilyMember(familyId);
+
+        // Delete: any family member
+        allow delete: if isFamilyMember(familyId);
+      }
+
+      // Criteria subcollection
+      match /criteria/{criterionId} {
+        // Read: any family member
+        allow read: if isFamilyMember(familyId);
+
+        // Create: any family member
+        allow create: if isFamilyMember(familyId) &&
+                         request.resource.data.familyId == familyId;
+
+        // Update: any family member
+        allow update: if isFamilyMember(familyId);
+
+        // Delete: any family member
+        allow delete: if isFamilyMember(familyId);
+      }
+
+      // Ratings subcollection
+      match /ratings/{ratingId} {
+        // Read: any family member
+        allow read: if isFamilyMember(familyId);
+
+        // Create: any family member (must set userId to their own ID)
+        allow create: if isFamilyMember(familyId) &&
+                         request.resource.data.familyId == familyId &&
+                         request.resource.data.userId == request.auth.uid;
+
+        // Update: only the rating author can update their own rating
+        allow update: if isFamilyMember(familyId) &&
+                         resource.data.userId == request.auth.uid;
+
+        // Delete: only the rating author can delete their own rating
+        allow delete: if isFamilyMember(familyId) &&
+                         resource.data.userId == request.auth.uid;
+      }
     }
   }
 }
