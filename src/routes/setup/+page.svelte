@@ -4,10 +4,10 @@
 	import { authStore } from '$lib/stores/auth-store';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { createOrUpdateUser } from '$lib/services/user-service';
-	import { createFamily } from '$lib/services/family-service';
-	import type { UserInput, FamilyInput } from '$lib/types';
+	import { addFamilyMember, getFamily } from '$lib/services/family-service';
+	import type { UserInput } from '$lib/types';
 
-	let familyName = $state('');
+	let familyId = $state('');
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 
@@ -41,8 +41,8 @@
 		}
 	}
 
-	async function handleSubmit(e: Event) {
-		e.preventDefault();
+	async function handleJoinFamily(event: Event): Promise<void> {
+		event.preventDefault();
 
 		if (!$authStore.user) {
 			error = 'Not authenticated';
@@ -53,14 +53,16 @@
 		error = null;
 
 		try {
-			// Create family
-			const familyData: FamilyInput = {
-				name: familyName,
-				ownerId: $authStore.user.uid,
-				memberIds: [$authStore.user.uid]
-			};
+			// Verify family exists
+			const family = await getFamily(familyId);
 
-			const familyId = await createFamily(familyData);
+			if (!family) {
+				error = 'Family not found. Please check the Family ID and try again.';
+				return;
+			}
+
+			// Add user to family
+			await addFamilyMember(familyId, $authStore.user.uid);
 
 			// Update user profile with familyId
 			await createOrUpdateUser($authStore.user.uid, {
@@ -68,14 +70,14 @@
 				displayName: $authStore.user.displayName ?? '',
 				photoUrl: $authStore.user.photoURL ?? null,
 				familyId,
-				role: 'owner'
+				role: 'member'
 			});
 
 			// Redirect to dashboard
 			goto('/');
-		} catch (err) {
-			console.error('Error creating family:', err);
-			error = err instanceof Error ? err.message : 'Failed to create family';
+		} catch (error_) {
+			console.error('Error joining family:', error_);
+			error = error_ instanceof Error ? error_.message : 'Failed to join family';
 		} finally {
 			loading = false;
 		}
@@ -85,38 +87,37 @@
 <div class="setup-page">
 	<div class="setup-card">
 		<h1>Welcome to House Evaluator!</h1>
-		<p class="subtitle">Let's get you set up</p>
+		<p class="subtitle">Join your family to get started</p>
 
 		{#if error}
 			<div class="error-message">{error}</div>
 		{/if}
 
-		<form onsubmit={handleSubmit} class="setup-form">
+		<form onsubmit={handleJoinFamily} class="setup-form">
 			<div class="form-field">
-				<label for="familyName">Family Name *</label>
+				<label for="familyId">Family ID *</label>
 				<input
 					type="text"
-					id="familyName"
-					bind:value={familyName}
+					id="familyId"
+					bind:value={familyId}
 					required
-					placeholder="The Smith Family"
-					autofocus
+					placeholder="Paste the Family ID here"
 				/>
-				<p class="field-hint">This will be shared with everyone you invite to rate houses</p>
+				<p class="field-hint">Paste the Firestore document ID for your family</p>
 			</div>
 
 			<button type="submit" class="btn-primary" disabled={loading}>
-				{loading ? 'Creating...' : 'Create Family'}
+				{loading ? 'Joining...' : 'Join Family'}
 			</button>
 		</form>
 
 		<div class="info-box">
-			<h3>What happens next?</h3>
+			<h3>Where to find your Family ID</h3>
 			<ul>
-				<li>Your family group will be created</li>
-				<li>Default rating criteria will be set up</li>
-				<li>You can start adding houses to evaluate</li>
-				<li>Invite family members to collaborate</li>
+				<li>Open the Firebase Console</li>
+				<li>Navigate to Firestore Database</li>
+				<li>Find your family in the "families" collection</li>
+				<li>Copy the document ID</li>
 			</ul>
 		</div>
 	</div>
