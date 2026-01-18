@@ -23,6 +23,11 @@ function createHousesStore() {
 	// Listen to user profile changes and subscribe to family houses
 	if (browser) {
 		userProfileStore.subscribe(($userProfile) => {
+			// CRITICAL: Wait for profile to be initialized
+			if (!$userProfile.initialized) {
+				return;
+			}
+
 			// Clean up previous listener
 			if (unsubscribe) {
 				unsubscribe();

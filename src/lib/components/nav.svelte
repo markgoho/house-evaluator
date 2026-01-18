@@ -47,6 +47,7 @@
 				<a href="/" class:active={$page.url.pathname === '/'}>Dashboard</a>
 				<a href="/houses" class:active={$page.url.pathname.startsWith('/houses')}>Houses</a>
 				<a href="/criteria" class:active={$page.url.pathname === '/criteria'}>Criteria</a>
+				<a href="/family" class:active={$page.url.pathname === '/family'}>Family</a>
 			</div>
 
 			<div class="user-menu">
