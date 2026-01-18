@@ -1,17 +1,8 @@
-import {
-	PUBLIC_FIREBASE_API_KEY,
-	PUBLIC_FIREBASE_AUTH_DOMAIN,
-	PUBLIC_FIREBASE_PROJECT_ID,
-	PUBLIC_FIREBASE_STORAGE_BUCKET,
-	PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-	PUBLIC_FIREBASE_APP_ID
-} from '$env/static/public';
-
 export const firebaseConfig = {
-	apiKey: PUBLIC_FIREBASE_API_KEY,
-	authDomain: PUBLIC_FIREBASE_AUTH_DOMAIN,
-	projectId: PUBLIC_FIREBASE_PROJECT_ID,
-	storageBucket: PUBLIC_FIREBASE_STORAGE_BUCKET,
-	messagingSenderId: PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-	appId: PUBLIC_FIREBASE_APP_ID
+	apiKey: 'AIzaSyDmdU5YX6-0inIPnqD8FhUvJIqthmTb8R8',
+	authDomain: 'house-eval.firebaseapp.com',
+	projectId: 'house-eval',
+	storageBucket: 'house-eval.firebasestorage.app',
+	messagingSenderId: '359995925407',
+	appId: '1:359995925407:web:ffd9f95150e62803db13aa'
 };
