@@ -8,7 +8,37 @@ When using Firebase Auth with Firestore in Svelte stores, there's a critical rac
 - **Cause**: Firestore listeners try to authenticate before Firebase Auth is fully initialized and has restored the user's auth token
 
 ### The Solution Pattern
-**Always wait for `authStore.initialized` before setting up Firestore listeners:**
+
+#### For Components: Use `userProfileReady` Store
+**BEST PRACTICE**: Use the `userProfileReady` derived store in components to automatically avoid race conditions:
+
+```typescript
+// ❌ BAD - Manual initialization check (error-prone, easy to forget)
+import { userProfileStore } from '$lib/stores/user-profile-store';
+
+$effect(() => {
+  if (!$userProfileStore.initialized) {
+    return;
+  }
+
+  if ($userProfileStore.profile?.familyId) {
+    loadFamilyData($userProfileStore.profile.familyId);
+  }
+});
+
+// ✅ GOOD - Use userProfileReady (automatic, foolproof)
+import { userProfileReady } from '$lib/stores/user-profile-store';
+
+$effect(() => {
+  // userProfileReady only emits when initialized - no manual check needed!
+  if ($userProfileReady.profile?.familyId) {
+    loadFamilyData($userProfileReady.profile.familyId);
+  }
+});
+```
+
+#### For Stores: Check `initialized` Flag
+**For creating stores** that subscribe to other stores, always check the `initialized` flag:
 
 ```typescript
 // ❌ BAD - Race condition on page refresh
@@ -53,8 +83,10 @@ if (browser) {
 
 If it works on navigation but fails on refresh, you have an initialization race condition.
 
-### Real Example from This Codebase
-See `src/lib/stores/user-profile-store.ts:28-31` for the fix that resolved the race condition where the house detail page worked on navigation but failed on refresh.
+### Real Examples from This Codebase
+- Store implementation: See `src/lib/stores/user-profile-store.ts:93-120` for the `userProfileReady` derived store
+- Component usage: See `src/routes/family/+page.svelte:21-25` for proper usage with `$effect()`
+- Store initialization: See `src/lib/stores/user-profile-store.ts:28-31` for checking `initialized` flag
 
 ## Firebase Security Rules - Initial Setup Chicken-and-Egg
 

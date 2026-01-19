@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { familyMembersStore } from '$lib/stores/family-members-store';
-	import { userProfileStore } from '$lib/stores/user-profile-store';
+	import { userProfileReady } from '$lib/stores/user-profile-store';
 	import {
 		getFamilyJoinRequests,
 		deleteJoinRequest
@@ -14,11 +13,15 @@
 	let processingRequestId = $state<string | null>(null);
 
 	// Check if the current user is the family owner
-	const isOwner = $derived($userProfileStore.profile?.role === 'owner');
-	const familyId = $derived($userProfileStore.profile?.familyId);
+	const isOwner = $derived($userProfileReady.profile?.role === 'owner');
+	const familyId = $derived($userProfileReady.profile?.familyId);
 
-	onMount(() => {
-		loadJoinRequests();
+	// Reactively load join requests when profile data becomes available
+	// userProfileReady only emits when initialized, so no race condition
+	$effect(() => {
+		if (familyId && isOwner) {
+			loadJoinRequests();
+		}
 	});
 
 	async function loadJoinRequests() {

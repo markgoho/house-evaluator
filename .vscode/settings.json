@@ -1,0 +1,22 @@
+{
+  // Use workspace TypeScript version, not VS Code's bundled version
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // Svelte settings
+  "svelte.enable-ts-plugin": true,
+
+  // Auto-run svelte-kit sync when files change
+  "files.watcherExclude": {
+    "**/.svelte-kit/**": false
+  },
+
+  // Show all TypeScript errors
+  "typescript.tsserver.log": "off",
+  "typescript.validate.enable": true,
+  "typescript.suggest.paths": true,
+
+  // Editor settings for better error visibility
+  "problems.decorations.enabled": true,
+  "problems.visibility": true
+}

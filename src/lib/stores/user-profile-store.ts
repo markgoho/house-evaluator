@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { getFirestoreInstance } from '$lib/firebase/get-firestore-instance';
 import { authStore } from './auth-store';
@@ -89,3 +89,32 @@ function createUserProfileStore() {
 }
 
 export const userProfileStore = createUserProfileStore();
+
+/**
+ * Derived store that only emits when userProfileStore is initialized.
+ * Use this in $effect() blocks to avoid race conditions on page refresh.
+ *
+ * Example:
+ * ```ts
+ * $effect(() => {
+ *   if ($userProfileReady.profile?.familyId) {
+ *     // Safe to use - profile is guaranteed to be initialized
+ *     loadFamilyData($userProfileReady.profile.familyId);
+ *   }
+ * });
+ * ```
+ */
+export const userProfileReady = derived(
+	userProfileStore,
+	($userProfileStore) => {
+		// Only emit values when initialized
+		if (!$userProfileStore.initialized) {
+			return { profile: null, loading: true, error: null };
+		}
+		return {
+			profile: $userProfileStore.profile,
+			loading: $userProfileStore.loading,
+			error: $userProfileStore.error
+		};
+	}
+);

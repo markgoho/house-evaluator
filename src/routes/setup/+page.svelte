@@ -33,7 +33,7 @@
 				displayName: $authStore.user.displayName ?? '',
 				photoUrl: $authStore.user.photoURL ?? null,
 				familyId: null,
-				role: 'owner'
+				role: 'member'
 			};
 
 			await createOrUpdateUser($authStore.user.uid, userData);
@@ -78,7 +78,7 @@
 			);
 
 			// Redirect to a pending page or home
-			goto('/');
+			goto('/pending');
 		} catch (error_) {
 			console.error('Error creating join request:', error_);
 			error = error_ instanceof Error ? error_.message : 'Failed to create join request';
