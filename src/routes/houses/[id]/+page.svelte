@@ -184,8 +184,8 @@
 					{:else}
 						<div class="average-score">
 							<div class="score-circle">
-								<span class="score">{averageScore}</span>
-								<span class="score-label">/ 10</span>
+								<span class="score">{averageScore > 0 ? '+' : ''}{averageScore}</span>
+								<span class="score-label">/ 5</span>
 							</div>
 							<p class="score-description">
 								Average score from {ratings.length} rating{ratings.length === 1 ? '' : 's'}
@@ -202,7 +202,7 @@
 										{/if}
 										<div class="rating-info">
 											<span class="user-name">{rating.userName}</span>
-											<span class="rating-score">{rating.overallScore} / 10</span>
+											<span class="rating-score">{rating.overallScore > 0 ? '+' : ''}{rating.overallScore} / 5</span>
 										</div>
 									</div>
 									{#if rating.comments}

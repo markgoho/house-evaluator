@@ -58,7 +58,7 @@
 			} else {
 				// Initialize with default scores
 				$criteriaStore.criteria.forEach((criterion) => {
-					criteriaScores[criterion.id] = 5;
+					criteriaScores[criterion.id] = 0;
 				});
 			}
 		} catch (err) {
@@ -119,7 +119,7 @@
 			<form onsubmit={handleSubmit} class="rating-form">
 				<div class="criteria-section">
 					<h2>Rate Each Criterion</h2>
-					<p class="section-description">Rate each aspect from 1 (poor) to 10 (excellent)</p>
+					<p class="section-description">Rate each aspect from -5 (poor) to +5 (excellent), with 0 as baseline/adequate</p>
 
 					{#if $criteriaStore.loading}
 						<div class="loading">Loading criteria...</div>
@@ -150,16 +150,22 @@
 										<input
 											type="range"
 											id={`criterion-${criterion.id}`}
-											min="1"
-											max="10"
+											min="-5"
+											max="5"
 											step="1"
 											bind:value={criteriaScores[criterion.id]}
 											class="slider"
 										/>
 										<div class="slider-labels">
-											<span>1</span>
-											<span class="current-score">{criteriaScores[criterion.id] ?? 5}</span>
-											<span>10</span>
+											<span>-5</span>
+											<span class="current-score">
+												{#if (criteriaScores[criterion.id] ?? 0) > 0}
+													+{criteriaScores[criterion.id]}
+												{:else}
+													{criteriaScores[criterion.id] ?? 0}
+												{/if}
+											</span>
+											<span>+5</span>
 										</div>
 									</div>
 								</div>

@@ -12,6 +12,8 @@ import {
 import { getFirestoreInstance } from "$lib/firebase/get-firestore-instance";
 import type { Rating, RatingInput, RatingUpdate, Criterion } from "$lib/types";
 
+// Calculates weighted average score
+// Scores range from -5 (poor) to +5 (excellent), with 0 as baseline/adequate
 function calculateOverallScore(
   criteriaScores: Record<string, number>,
   criteria: Criterion[],
