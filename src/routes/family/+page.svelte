@@ -51,6 +51,9 @@
 				request.userPhotoUrl
 			);
 
+			// Delete the request after approval to clean up
+			await deleteJoinRequest(request.id);
+
 			// Remove from the list
 			joinRequests = joinRequests.filter((r) => r.id !== request.id);
 		} catch (err) {

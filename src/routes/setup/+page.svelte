@@ -63,13 +63,13 @@
 			}
 
 			// Create a join request instead of directly joining
-			await createJoinRequest(
+			await createJoinRequest({
 				familyId,
-				$authStore.user.uid,
-				$authStore.user.email ?? '',
-				$authStore.user.displayName ?? '',
-				$authStore.user.photoURL ?? null
-			);
+				userId: $authStore.user.uid,
+				userEmail: $authStore.user.email ?? '',
+				userDisplayName: $authStore.user.displayName ?? '',
+				userPhotoUrl: $authStore.user.photoURL ?? null
+			});
 
 			// Show success message
 			error = null;

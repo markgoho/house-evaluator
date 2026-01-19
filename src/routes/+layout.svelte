@@ -13,8 +13,8 @@
 	const publicPages = ['/login'];
 	const isPublicPage = $derived(publicPages.includes($page.url.pathname));
 
-	// Pages that don't require a family (setup page itself)
-	const noFamilyAllowed = ['/setup', '/login'];
+	// Pages that don't require a family (setup, pending, login)
+	const noFamilyAllowed = ['/setup', '/pending', '/login'];
 	const requiresFamily = $derived(!noFamilyAllowed.includes($page.url.pathname));
 
 	// Redirect to setup if user is logged in but has no family
