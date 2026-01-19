@@ -11,7 +11,7 @@ import {
 	serverTimestamp,
 	type Timestamp
 } from 'firebase/firestore';
-import { db } from '$lib/firebase';
+import { getFirestoreInstance } from '$lib/firebase/get-firestore-instance';
 import type { JoinRequest, JoinRequestInput, JoinRequestStatus } from '$lib/types';
 
 const JOIN_REQUESTS_COLLECTION = 'joinRequests';
@@ -33,7 +33,7 @@ export async function createJoinRequest(
 		status: 'pending'
 	};
 
-	const docRef = await addDoc(collection(db, JOIN_REQUESTS_COLLECTION), {
+	const docRef = await addDoc(collection(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION), {
 		...joinRequestData,
 		createdAt: serverTimestamp(),
 		updatedAt: serverTimestamp()
@@ -47,7 +47,7 @@ export async function createJoinRequest(
  */
 export async function getFamilyJoinRequests(familyId: string): Promise<JoinRequest[]> {
 	const q = query(
-		collection(db, JOIN_REQUESTS_COLLECTION),
+		collection(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION),
 		where('familyId', '==', familyId),
 		where('status', '==', 'pending')
 	);
@@ -68,7 +68,7 @@ export async function getFamilyJoinRequests(familyId: string): Promise<JoinReque
  * Get a specific join request
  */
 export async function getJoinRequest(requestId: string): Promise<JoinRequest | null> {
-	const docRef = doc(db, JOIN_REQUESTS_COLLECTION, requestId);
+	const docRef = doc(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION, requestId);
 	const docSnap = await getDoc(docRef);
 
 	if (!docSnap.exists()) {
@@ -91,7 +91,7 @@ export async function updateJoinRequestStatus(
 	requestId: string,
 	status: JoinRequestStatus
 ): Promise<void> {
-	const docRef = doc(db, JOIN_REQUESTS_COLLECTION, requestId);
+	const docRef = doc(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION, requestId);
 	await updateDoc(docRef, {
 		status,
 		updatedAt: serverTimestamp()
@@ -102,7 +102,7 @@ export async function updateJoinRequestStatus(
  * Delete a join request
  */
 export async function deleteJoinRequest(requestId: string): Promise<void> {
-	const docRef = doc(db, JOIN_REQUESTS_COLLECTION, requestId);
+	const docRef = doc(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION, requestId);
 	await deleteDoc(docRef);
 }
 
@@ -110,7 +110,7 @@ export async function deleteJoinRequest(requestId: string): Promise<void> {
  * Get join requests created by a specific user
  */
 export async function getUserJoinRequests(userId: string): Promise<JoinRequest[]> {
-	const q = query(collection(db, JOIN_REQUESTS_COLLECTION), where('userId', '==', userId));
+	const q = query(collection(getFirestoreInstance(), JOIN_REQUESTS_COLLECTION), where('userId', '==', userId));
 
 	const snapshot = await getDocs(q);
 	return snapshot.docs.map((doc) => {
