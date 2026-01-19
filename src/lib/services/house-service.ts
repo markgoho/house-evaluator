@@ -53,34 +53,43 @@ export async function createHouse({
   // Step 2: If image URL provided, attempt to download and upload
   // This is best-effort - house creation succeeds even if image fails
   if (sourceImageUrl) {
+    console.log(`[House Service] Image URL provided: ${sourceImageUrl}`);
     try {
-      // Download image via CORS proxy
+      // Download image via direct fetch
+      console.log(`[House Service] Downloading image for house ${houseId}...`);
       const imageBlob = await downloadImageFromUrl({ sourceUrl: sourceImageUrl });
+      console.log(`[House Service] Image downloaded successfully`);
 
       // Generate filename with timestamp to ensure uniqueness
       const timestamp = Date.now();
       const extension = imageBlob.type.split("/")[1] ?? "jpg";
       const filename = `main-${timestamp}.${extension}`;
+      console.log(`[House Service] Generated filename: ${filename}`);
 
       // Upload to Firebase Storage
+      console.log(`[House Service] Uploading to Firebase Storage...`);
       const photoUrl = await uploadHousePhoto({
         familyId: data.familyId,
         houseId,
         imageBlob,
         filename,
       });
+      console.log(`[House Service] Upload complete, photo URL: ${photoUrl}`);
 
       // Update house document with photo URL
+      console.log(`[House Service] Updating house document with photo URL...`);
       await updateDoc(houseRef, {
         photoUrls: arrayUnion(photoUrl),
         updatedAt: serverTimestamp(),
       });
 
-      console.log(`Successfully uploaded image for house ${houseId}`);
+      console.log(`[House Service] Successfully uploaded image for house ${houseId}`);
     } catch (error) {
       // Log error but don't fail house creation
-      console.error(`Failed to upload image for house ${houseId}:`, error);
+      console.error(`[House Service] Failed to upload image for house ${houseId}:`, error);
     }
+  } else {
+    console.log(`[House Service] No image URL provided for house ${houseId}`);
   }
 
   return houseId;

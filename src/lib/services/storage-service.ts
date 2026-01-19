@@ -13,18 +13,25 @@ export async function downloadImageFromUrl({
 }: {
 	sourceUrl: string;
 }): Promise<Blob> {
+	console.log("[Storage Service] Starting image download from:", sourceUrl);
+
 	try {
 		// Try direct fetch first (works if CORS is allowed)
+		console.log("[Storage Service] Fetching image with CORS mode...");
 		const response = await fetch(sourceUrl, {
 			mode: "cors",
 			credentials: "omit"
 		});
+
+		console.log("[Storage Service] Fetch response status:", response.status);
+		console.log("[Storage Service] Response content-type:", response.headers.get("content-type"));
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
 		}
 
 		const blob = await response.blob();
+		console.log("[Storage Service] Blob received - type:", blob.type, "size:", blob.size);
 
 		// Verify it's an image
 		if (!blob.type.startsWith("image/")) {
@@ -36,9 +43,10 @@ export async function downloadImageFromUrl({
 			throw new Error(`Image too large (${Math.round(blob.size / 1024 / 1024)}MB). Maximum is 5MB.`);
 		}
 
+		console.log("[Storage Service] Image download successful!");
 		return blob;
 	} catch (error) {
-		console.error("Failed to download image:", error);
+		console.error("[Storage Service] Failed to download image:", error);
 		throw error instanceof Error ? error : new Error("Failed to download image");
 	}
 }
@@ -63,19 +71,26 @@ export async function uploadHousePhoto({
 	imageBlob: Blob;
 	filename: string;
 }): Promise<string> {
+	console.log("[Storage Service] Starting upload - familyId:", familyId, "houseId:", houseId, "filename:", filename);
+	console.log("[Storage Service] Blob size:", imageBlob.size, "type:", imageBlob.type);
+
 	const storage = getStorageInstance();
 
 	// Create storage reference with path: families/{familyId}/houses/{houseId}/{filename}
 	const storagePath = `families/${familyId}/houses/${houseId}/${filename}`;
+	console.log("[Storage Service] Storage path:", storagePath);
 	const storageRef = ref(storage, storagePath);
 
 	// Upload the image
+	console.log("[Storage Service] Uploading to Firebase Storage...");
 	const uploadResult = await uploadBytes(storageRef, imageBlob, {
 		contentType: imageBlob.type
 	});
+	console.log("[Storage Service] Upload complete!");
 
 	// Get and return the download URL
 	const downloadURL = await getDownloadURL(uploadResult.ref);
+	console.log("[Storage Service] Download URL:", downloadURL);
 	return downloadURL;
 }
 
