@@ -14,8 +14,8 @@
 	let processingRequestId = $state<string | null>(null);
 
 	// Check if the current user is the family owner
-	$: isOwner = $userProfileStore.profile?.role === 'owner';
-	$: familyId = $userProfileStore.profile?.familyId;
+	const isOwner = $derived($userProfileStore.profile?.role === 'owner');
+	const familyId = $derived($userProfileStore.profile?.familyId);
 
 	onMount(() => {
 		loadJoinRequests();
