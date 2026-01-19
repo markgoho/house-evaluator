@@ -110,7 +110,7 @@
 			</div>
 
 			<button type="submit" class="btn-primary" disabled={loading}>
-				{loading ? 'Joining...' : 'Join Family'}
+				{loading ? 'Sending Request...' : 'Request to Join'}
 			</button>
 		</form>
 
