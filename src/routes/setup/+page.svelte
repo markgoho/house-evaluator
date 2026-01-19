@@ -67,7 +67,8 @@
 				familyId,
 				$authStore.user.uid,
 				$authStore.user.email ?? '',
-				$authStore.user.displayName ?? ''
+				$authStore.user.displayName ?? '',
+				$authStore.user.photoURL ?? null
 			);
 
 			// Show success message

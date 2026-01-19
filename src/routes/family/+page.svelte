@@ -44,7 +44,8 @@
 				familyId,
 				request.userId,
 				request.userEmail,
-				request.userDisplayName
+				request.userDisplayName,
+				request.userPhotoUrl
 			);
 
 			// Remove from the list

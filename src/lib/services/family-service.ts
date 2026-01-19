@@ -68,7 +68,8 @@ export async function approveJoinRequest(
 	familyId: string,
 	userId: string,
 	userEmail: string,
-	userDisplayName: string
+	userDisplayName: string,
+	userPhotoUrl: string | null
 ): Promise<void> {
 	// Add user to family memberIds
 	await addFamilyMember(familyId, userId);
@@ -77,7 +78,7 @@ export async function approveJoinRequest(
 	await createOrUpdateUser(userId, {
 		email: userEmail,
 		displayName: userDisplayName,
-		photoUrl: null,
+		photoUrl: userPhotoUrl,
 		familyId,
 		role: 'member'
 	});

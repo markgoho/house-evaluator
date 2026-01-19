@@ -23,7 +23,14 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isAuthenticated() && request.auth.uid == userId;
+      // Allow user to update their own profile, OR
+      // Allow family owner to update profile when adding user to family (must include familyId and role)
+      allow update: if isAuthenticated() && (
+                       request.auth.uid == userId ||
+                       (request.resource.data.keys().hasAll(['familyId', 'role']) &&
+                        request.resource.data.role == 'member' &&
+                        isFamilyOwner(request.resource.data.familyId))
+                    );
       allow delete: if false; // Users cannot delete their own profile
     }
 

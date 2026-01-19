@@ -23,13 +23,15 @@ export async function createJoinRequest(
 	familyId: string,
 	userId: string,
 	userEmail: string,
-	userDisplayName: string
+	userDisplayName: string,
+	userPhotoUrl: string | null
 ): Promise<string> {
 	const joinRequestData: JoinRequestInput = {
 		familyId,
 		userId,
 		userEmail,
 		userDisplayName,
+		userPhotoUrl,
 		status: 'pending'
 	};
 

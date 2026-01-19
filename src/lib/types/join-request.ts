@@ -7,6 +7,7 @@ export interface JoinRequest {
 	status: JoinRequestStatus;
 	userEmail: string;
 	userDisplayName: string;
+	userPhotoUrl: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
