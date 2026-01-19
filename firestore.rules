@@ -19,21 +19,6 @@ service cloud.firestore {
              get(/databases/$(database)/documents/families/$(familyId)).data.ownerId == request.auth.uid;
     }
 
-    // Helper function: Check if user can add themselves to a family
-    function canAddSelfToFamily() {
-      let affectedKeys = request.resource.data.diff(resource.data).affectedKeys();
-      let oldMembers = resource.data.memberIds;
-      let newMembers = request.resource.data.memberIds;
-
-      return isAuthenticated() &&
-             // Only memberIds and updatedAt are being changed
-             affectedKeys.hasOnly(['memberIds', 'updatedAt']) &&
-             // All old members are still present (not removing anyone)
-             newMembers.hasAll(oldMembers) &&
-             // Only adding the current user (not adding anyone else)
-             newMembers.toSet().difference(oldMembers.toSet()).hasOnly([request.auth.uid]);
-    }
-
     // Users collection - users can read all profiles, but only write their own
     match /users/{userId} {
       allow read: if isAuthenticated();
@@ -51,8 +36,8 @@ service cloud.firestore {
       allow create: if isAuthenticated() &&
                        request.resource.data.ownerId == request.auth.uid;
 
-      // Update: family owner can update, OR users can add themselves to memberIds
-      allow update: if isFamilyOwner(familyId) || canAddSelfToFamily();
+      // Update: only family owner can update family
+      allow update: if isFamilyOwner(familyId);
 
       // Delete: only family owner can delete family
       allow delete: if isFamilyOwner(familyId);
@@ -107,6 +92,30 @@ service cloud.firestore {
         allow delete: if isFamilyMember(familyId) &&
                          resource.data.userId == request.auth.uid;
       }
+    }
+
+    // Join Requests collection - for users requesting to join families
+    match /joinRequests/{requestId} {
+      // Read: family owner can see requests for their family, or the requester can see their own
+      allow read: if isAuthenticated() &&
+                     (get(/databases/$(database)/documents/families/$(resource.data.familyId)).data.ownerId == request.auth.uid ||
+                      resource.data.userId == request.auth.uid);
+
+      // Create: authenticated users can create join requests (must set userId to their own ID)
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid &&
+                       request.resource.data.status == 'pending';
+
+      // Update: only family owner can approve/deny requests
+      allow update: if isAuthenticated() &&
+                       get(/databases/$(database)/documents/families/$(resource.data.familyId)).data.ownerId == request.auth.uid &&
+                       resource.data.status == 'pending' &&
+                       (request.resource.data.status == 'approved' || request.resource.data.status == 'denied');
+
+      // Delete: requester can delete their own pending request, or family owner can delete any request for their family
+      allow delete: if isAuthenticated() &&
+                       (resource.data.userId == request.auth.uid ||
+                        get(/databases/$(database)/documents/families/$(resource.data.familyId)).data.ownerId == request.auth.uid);
     }
   }
 }

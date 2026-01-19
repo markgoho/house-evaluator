@@ -4,7 +4,8 @@
 	import { authStore } from '$lib/stores/auth-store';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { createOrUpdateUser } from '$lib/services/user-service';
-	import { addFamilyMember, getFamily } from '$lib/services/family-service';
+	import { getFamily } from '$lib/services/family-service';
+	import { createJoinRequest } from '$lib/services/join-request-service';
 	import type { UserInput } from '$lib/types';
 
 	let familyId = $state('');
@@ -61,23 +62,25 @@
 				return;
 			}
 
-			// Add user to family
-			await addFamilyMember(familyId, $authStore.user.uid);
-
-			// Update user profile with familyId
-			await createOrUpdateUser($authStore.user.uid, {
-				email: $authStore.user.email ?? '',
-				displayName: $authStore.user.displayName ?? '',
-				photoUrl: $authStore.user.photoURL ?? null,
+			// Create a join request instead of directly joining
+			await createJoinRequest(
 				familyId,
-				role: 'member'
-			});
+				$authStore.user.uid,
+				$authStore.user.email ?? '',
+				$authStore.user.displayName ?? ''
+			);
 
-			// Redirect to dashboard
+			// Show success message
+			error = null;
+			alert(
+				`Join request sent! The family owner (${family.name}) will need to approve your request before you can access the family data.`
+			);
+
+			// Redirect to a pending page or home
 			goto('/');
 		} catch (error_) {
-			console.error('Error joining family:', error_);
-			error = error_ instanceof Error ? error_.message : 'Failed to join family';
+			console.error('Error creating join request:', error_);
+			error = error_ instanceof Error ? error_.message : 'Failed to create join request';
 		} finally {
 			loading = false;
 		}

@@ -1,5 +1,76 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { familyMembersStore } from '$lib/stores/family-members-store';
+	import { userProfileStore } from '$lib/stores/user-profile-store';
+	import {
+		getFamilyJoinRequests,
+		deleteJoinRequest
+	} from '$lib/services/join-request-service';
+	import { approveJoinRequest, denyJoinRequest } from '$lib/services/family-service';
+	import type { JoinRequest } from '$lib/types';
+
+	let joinRequests = $state<JoinRequest[]>([]);
+	let loadingRequests = $state(false);
+	let processingRequestId = $state<string | null>(null);
+
+	// Check if the current user is the family owner
+	$: isOwner = $userProfileStore.profile?.role === 'owner';
+	$: familyId = $userProfileStore.profile?.familyId;
+
+	onMount(() => {
+		loadJoinRequests();
+	});
+
+	async function loadJoinRequests() {
+		if (!familyId || !isOwner) return;
+
+		loadingRequests = true;
+		try {
+			joinRequests = await getFamilyJoinRequests(familyId);
+		} catch (err) {
+			console.error('Error loading join requests:', err);
+		} finally {
+			loadingRequests = false;
+		}
+	}
+
+	async function handleApprove(request: JoinRequest) {
+		if (!familyId) return;
+
+		processingRequestId = request.id;
+		try {
+			await approveJoinRequest(
+				request.id,
+				familyId,
+				request.userId,
+				request.userEmail,
+				request.userDisplayName
+			);
+
+			// Remove from the list
+			joinRequests = joinRequests.filter((r) => r.id !== request.id);
+		} catch (err) {
+			console.error('Error approving request:', err);
+			alert('Failed to approve request. Please try again.');
+		} finally {
+			processingRequestId = null;
+		}
+	}
+
+	async function handleDeny(request: JoinRequest) {
+		processingRequestId = request.id;
+		try {
+			await denyJoinRequest(request.id);
+			// Remove from the list after denying
+			await deleteJoinRequest(request.id);
+			joinRequests = joinRequests.filter((r) => r.id !== request.id);
+		} catch (err) {
+			console.error('Error denying request:', err);
+			alert('Failed to deny request. Please try again.');
+		} finally {
+			processingRequestId = null;
+		}
+	}
 </script>
 
 <div class="family-page">
@@ -7,6 +78,42 @@
 		<div class="page-header">
 			<h1>Family Members</h1>
 		</div>
+
+		<!-- Join Requests Section (only visible to owners) -->
+		{#if isOwner && !loadingRequests && joinRequests.length > 0}
+			<div class="join-requests-section">
+				<h2>Pending Join Requests</h2>
+				<div class="requests-list">
+					{#each joinRequests as request (request.id)}
+						<div class="request-card">
+							<div class="request-info">
+								<h3>{request.userDisplayName}</h3>
+								<p class="email">{request.userEmail}</p>
+								<p class="timestamp">
+									Requested {new Date(request.createdAt).toLocaleDateString()}
+								</p>
+							</div>
+							<div class="request-actions">
+								<button
+									class="btn-approve"
+									onclick={() => handleApprove(request)}
+									disabled={processingRequestId !== null}
+								>
+									{processingRequestId === request.id ? 'Approving...' : 'Approve'}
+								</button>
+								<button
+									class="btn-deny"
+									onclick={() => handleDeny(request)}
+									disabled={processingRequestId !== null}
+								>
+									{processingRequestId === request.id ? 'Denying...' : 'Deny'}
+								</button>
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 		{#if $familyMembersStore.loading}
 			<div class="loading">Loading family members...</div>
@@ -180,6 +287,98 @@
 		color: white;
 	}
 
+	/* Join Requests Styles */
+	.join-requests-section {
+		margin-bottom: var(--spacing-xl);
+		padding: var(--spacing-lg);
+		background: #fff3cd;
+		border: 2px solid #ffc107;
+		border-radius: var(--radius-lg);
+	}
+
+	.join-requests-section h2 {
+		font-size: var(--font-size-xl);
+		color: var(--color-text-primary);
+		margin-bottom: var(--spacing-md);
+	}
+
+	.requests-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-md);
+	}
+
+	.request-card {
+		background: white;
+		padding: var(--spacing-md);
+		border-radius: var(--radius-md);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--spacing-md);
+		box-shadow: var(--shadow-sm);
+	}
+
+	.request-info h3 {
+		font-size: var(--font-size-base);
+		color: var(--color-text-primary);
+		margin-bottom: var(--spacing-xs);
+	}
+
+	.request-info .email {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		margin-bottom: var(--spacing-xs);
+	}
+
+	.request-info .timestamp {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		font-style: italic;
+	}
+
+	.request-actions {
+		display: flex;
+		gap: var(--spacing-sm);
+		flex-shrink: 0;
+	}
+
+	.btn-approve,
+	.btn-deny {
+		padding: var(--spacing-sm) var(--spacing-md);
+		border: none;
+		border-radius: var(--radius-md);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+		white-space: nowrap;
+	}
+
+	.btn-approve {
+		background: var(--color-success);
+		color: white;
+	}
+
+	.btn-approve:hover:not(:disabled) {
+		background: #28a745;
+	}
+
+	.btn-deny {
+		background: var(--color-error);
+		color: white;
+	}
+
+	.btn-deny:hover:not(:disabled) {
+		background: #c82333;
+	}
+
+	.btn-approve:disabled,
+	.btn-deny:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
 	@media (max-width: 768px) {
 		.family-page {
 			padding: var(--spacing-md);
@@ -187,6 +386,20 @@
 
 		.members-grid {
 			grid-template-columns: 1fr;
+		}
+
+		.request-card {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.request-actions {
+			width: 100%;
+		}
+
+		.btn-approve,
+		.btn-deny {
+			flex: 1;
 		}
 	}
 </style>
