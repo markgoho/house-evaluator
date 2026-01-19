@@ -2,44 +2,45 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { getStorageInstance } from "$lib/firebase/get-storage-instance";
 
 /**
- * Downloads an image from an external URL via our CORS proxy API route
+ * Downloads an image from an external URL by fetching it directly
+ * Note: This may fail due to CORS if the image server doesn't allow cross-origin requests
  * @param sourceUrl - The URL of the image to download
  * @returns A Blob of the downloaded image
- * @throws Error if download fails or response is invalid
+ * @throws Error if download fails
  */
 export async function downloadImageFromUrl({
 	sourceUrl
 }: {
 	sourceUrl: string;
 }): Promise<Blob> {
-	const response = await fetch("/api/download-image", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({ imageUrl: sourceUrl })
-	});
+	try {
+		// Try direct fetch first (works if CORS is allowed)
+		const response = await fetch(sourceUrl, {
+			mode: "cors",
+			credentials: "omit"
+		});
 
-	if (!response.ok) {
-		const error = await response.text();
-		throw new Error(`Failed to download image: ${error}`);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+		}
+
+		const blob = await response.blob();
+
+		// Verify it's an image
+		if (!blob.type.startsWith("image/")) {
+			throw new Error(`URL does not point to an image (got ${blob.type})`);
+		}
+
+		// Check size (max 5MB)
+		if (blob.size > 5 * 1024 * 1024) {
+			throw new Error(`Image too large (${Math.round(blob.size / 1024 / 1024)}MB). Maximum is 5MB.`);
+		}
+
+		return blob;
+	} catch (error) {
+		console.error("Failed to download image:", error);
+		throw error instanceof Error ? error : new Error("Failed to download image");
 	}
-
-	const data = await response.json();
-
-	if (!data.image || !data.contentType) {
-		throw new Error("Invalid response from download API");
-	}
-
-	// Convert base64 to Blob
-	const base64Data = data.image;
-	const byteCharacters = atob(base64Data);
-	const byteNumbers = new Array(byteCharacters.length);
-	for (let i = 0; i < byteCharacters.length; i++) {
-		byteNumbers[i] = byteCharacters.charCodeAt(i);
-	}
-	const byteArray = new Uint8Array(byteNumbers);
-	return new Blob([byteArray], { type: data.contentType });
 }
 
 /**
