@@ -23,6 +23,7 @@
 	let price = $state<number | null>(null);
 	let listingUrl = $state('');
 	let notes = $state('');
+	let sourceImageUrl = $state<string | undefined>(undefined);
 
 	// Parse URL parameters on mount to pre-fill form
 	onMount(() => {
@@ -86,6 +87,12 @@
 			const parsed = Number.parseInt(lotSizeParam, 10);
 			if (!Number.isNaN(parsed) && parsed > 0) lotSize = parsed;
 		}
+
+		// Image URL from extension
+		const imageUrlParam = params.get('imageUrl');
+		if (imageUrlParam) {
+			sourceImageUrl = imageUrlParam;
+		}
 	});
 
 	async function handleSubmit(e: Event) {
@@ -123,7 +130,10 @@
 				createdBy: $authStore.user.uid
 			};
 
-			const houseId = await createHouse(houseData);
+			const houseId = await createHouse({
+				data: houseData,
+				sourceImageUrl
+			});
 			goto(`/houses/${houseId}`);
 		} catch (err) {
 			console.error('Error creating house:', err);
@@ -182,7 +192,7 @@
 				<div class="form-row">
 					<div class="form-field">
 						<label for="price">Price</label>
-						<input type="number" id="price" bind:value={price} placeholder="500000" step="1000" />
+						<input type="number" id="price" bind:value={price} placeholder="500000" step="1" />
 					</div>
 					<div class="form-field">
 						<label for="squareFeet">Square Feet</label>
@@ -253,6 +263,16 @@
 					</div>
 				</div>
 			</div>
+
+			{#if sourceImageUrl}
+				<div class="form-section">
+					<h2>Property Photo</h2>
+					<div class="image-preview">
+						<img src={sourceImageUrl} alt="Property preview" />
+						<p class="image-note">This image will be uploaded when you create the house</p>
+					</div>
+				</div>
+			{/if}
 
 			<div class="form-actions">
 				<button type="submit" class="btn-primary" disabled={loading}>
@@ -395,6 +415,30 @@
 
 	.btn-secondary:hover {
 		background: var(--color-surface);
+	}
+
+	.image-preview {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-md);
+		align-items: center;
+	}
+
+	.image-preview img {
+		max-width: 100%;
+		max-height: 400px;
+		width: auto;
+		height: auto;
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		object-fit: contain;
+	}
+
+	.image-note {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		font-style: italic;
+		text-align: center;
 	}
 
 	@media (max-width: 768px) {

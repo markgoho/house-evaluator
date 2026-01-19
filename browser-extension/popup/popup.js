@@ -3,7 +3,8 @@
  * Handles the extension popup UI and communication with content scripts
  */
 
-const BASE_URL = "http://localhost:5173/houses/new";
+// Use deployed app (change to localhost:5173 for local development)
+const BASE_URL = "https://house-eval.web.app/houses/new";
 
 // Format field names for display
 const FIELD_LABELS = {
@@ -18,6 +19,7 @@ const FIELD_LABELS = {
   lotSize: "Lot Size",
   yearBuilt: "Year Built",
   listingUrl: "Listing URL",
+  imageUrl: "Property Photo",
 };
 
 /**
@@ -40,6 +42,9 @@ function formatValue(key, value) {
     case "listingUrl":
       // Truncate long URLs
       return value.length > 50 ? value.substring(0, 47) + "..." : value;
+    case "imageUrl":
+      // Show indicator instead of full URL
+      return "[Image Available]";
     default:
       return value.toString();
   }

@@ -1,5 +1,77 @@
 # House Evaluator - Development Guidelines
 
+## Package Manager - Bun Only
+
+### Critical: Use Bun, NOT npm or npx
+
+This project uses **Bun** as its package manager and runtime. Do NOT use npm or npx commands.
+
+```bash
+# ❌ BAD - Do not use npm/npx
+npm install
+npm run dev
+npx some-command
+
+# ✅ GOOD - Use bun
+bun install
+bun run dev
+bun x some-command
+```
+
+**Key Commands:**
+- `bun install` - Install dependencies
+- `bun run dev` - Start development server
+- `bun run build` - Build for production
+- `bun x <command>` - Execute a package binary (replaces npx)
+
+## Browser Extension Version Management
+
+### CRITICAL: Always Update Extension Version
+
+**ALWAYS update the version in `browser-extension/manifest.json` when making ANY changes to the extension code.**
+
+This includes changes to:
+- Content scripts (`content-scripts/*.js`)
+- Popup scripts (`popup/*.js`)
+- Popup HTML/CSS (`popup/*.html`, `popup/*.css`)
+- Manifest configuration
+
+### Version Bump Guidelines
+
+Follow semantic versioning:
+
+- **Major version** (X.0.0): Breaking changes or major feature overhaul
+  - Example: Changing data extraction format, removing features
+
+- **Minor version** (1.X.0): New features or significant enhancements
+  - Example: Adding image extraction, supporting new listing sites
+
+- **Patch version** (1.0.X): Bug fixes or small improvements
+  - Example: Fixing selector, improving error handling
+
+### Example Updates
+
+```json
+// Before - bug fix
+"version": "1.1.0"
+
+// After - bug fix (patch bump)
+"version": "1.1.1"
+
+// Before - new feature
+"version": "1.1.1"
+
+// After - new feature (minor bump)
+"version": "1.2.0"
+```
+
+### Why This Matters
+
+- Chrome Web Store requires version bumps for updates
+- Users can see what version they're running
+- Helps track which features are in which version
+- Makes debugging easier ("What version are you using?")
+
 ## Firebase Authentication & Firestore Race Conditions
 
 ### The Problem

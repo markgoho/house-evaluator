@@ -10,9 +10,14 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  arrayUnion,
 } from "firebase/firestore";
 import { getFirestoreInstance } from "$lib/firebase/get-firestore-instance";
 import type { House, HouseInput, HouseUpdate } from "$lib/types";
+import {
+  downloadImageFromUrl,
+  uploadHousePhoto,
+} from "$lib/services/storage-service";
 
 function calculatePricePerSqFt(
   price: number | null,
@@ -24,7 +29,13 @@ function calculatePricePerSqFt(
   return null;
 }
 
-export async function createHouse(data: HouseInput): Promise<string> {
+export async function createHouse({
+  data,
+  sourceImageUrl,
+}: {
+  data: HouseInput;
+  sourceImageUrl?: string;
+}): Promise<string> {
   const db = getFirestoreInstance();
   const houseRef = doc(collection(db, "families", data.familyId, "houses"));
 
@@ -35,8 +46,44 @@ export async function createHouse(data: HouseInput): Promise<string> {
     updatedAt: serverTimestamp(),
   };
 
+  // Step 1: Create house document first (atomic operation, always succeeds)
   await setDoc(houseRef, houseData);
-  return houseRef.id;
+  const houseId = houseRef.id;
+
+  // Step 2: If image URL provided, attempt to download and upload
+  // This is best-effort - house creation succeeds even if image fails
+  if (sourceImageUrl) {
+    try {
+      // Download image via CORS proxy
+      const imageBlob = await downloadImageFromUrl({ sourceUrl: sourceImageUrl });
+
+      // Generate filename with timestamp to ensure uniqueness
+      const timestamp = Date.now();
+      const extension = imageBlob.type.split("/")[1] ?? "jpg";
+      const filename = `main-${timestamp}.${extension}`;
+
+      // Upload to Firebase Storage
+      const photoUrl = await uploadHousePhoto({
+        familyId: data.familyId,
+        houseId,
+        imageBlob,
+        filename,
+      });
+
+      // Update house document with photo URL
+      await updateDoc(houseRef, {
+        photoUrls: arrayUnion(photoUrl),
+        updatedAt: serverTimestamp(),
+      });
+
+      console.log(`Successfully uploaded image for house ${houseId}`);
+    } catch (error) {
+      // Log error but don't fail house creation
+      console.error(`Failed to upload image for house ${houseId}:`, error);
+    }
+  }
+
+  return houseId;
 }
 
 export async function getHouse(

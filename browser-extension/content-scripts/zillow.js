@@ -110,6 +110,143 @@ function findLargestNumber(pattern, extractPattern) {
 }
 
 /**
+ * Check if an image should be skipped (not the main listing photo)
+ * @param {HTMLImageElement} img - The image element to check
+ * @returns {boolean} - True if this image should be skipped
+ */
+function shouldSkipImage(img) {
+  if (!img) return true;
+
+  // Check if URL is from Google Maps/Street View
+  const src = img.src || '';
+  if (src.includes('google.com/maps') || src.includes('googleapis.com/maps') || src.includes('gstatic.com')) {
+    return true;
+  }
+
+  // Check alt text for unwanted indicators
+  const alt = (img.alt || '').toLowerCase();
+  if (alt.includes('street view') || alt.includes('google') || alt.includes('agent')) {
+    return true;
+  }
+
+  // CRITICAL: Check if image is in a recommendation section
+  // Walk up the DOM tree checking for these sections
+  let parent = img.parentElement;
+  for (let i = 0; i < 15 && parent; i++) {
+    const className = (parent.className || '').toLowerCase();
+    const ariaLabel = (parent.getAttribute('aria-label') || '').toLowerCase();
+    const textContent = (parent.textContent || '').toLowerCase();
+
+    // Skip if in ANY recommendation/suggestion section
+    if (
+      className.includes('nearby') ||
+      className.includes('similar') ||
+      className.includes('recommend') ||
+      className.includes('homes-for-you') ||
+      className.includes('homesforyou') ||
+      ariaLabel.includes('nearby') ||
+      ariaLabel.includes('similar') ||
+      ariaLabel.includes('homes for you') ||
+      ariaLabel.includes('recommended') ||
+      textContent.includes('nearby homes') ||
+      textContent.includes('similar homes') ||
+      textContent.includes('homes for you')
+    ) {
+      return true;
+    }
+
+    // Skip if in street view or map sections
+    if (className.includes('street') || className.includes('map')) {
+      return true;
+    }
+
+    parent = parent.parentElement;
+  }
+
+  // Skip very small images (likely icons)
+  if (img.width > 0 && img.width < 100) {
+    return true;
+  }
+  if (img.height > 0 && img.height < 100) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Extract main property image URL from the page
+ * @returns {string|null} - Image URL or null
+ */
+function extractImageUrl() {
+  // New strategy: Look specifically for Zillow featured photo URLs
+  // Pattern: photos.zillowstatic.com/fp/HASH-cc_ft_DIMENSIONS.webp
+  // The /fp/ path indicates "featured photo" (the main listing images)
+
+  const allImages = Array.from(document.querySelectorAll('img'));
+  const featuredPhotos = [];
+
+  for (const img of allImages) {
+    const src = img.src || '';
+    const srcset = img.srcset || '';
+
+    // Check src for featured photo pattern
+    if (src.includes('photos.zillowstatic.com/fp/') || src.includes('zillowstatic.com/fp/')) {
+      // Extract dimensions from URL (e.g., cc_ft_1536.webp -> 1536)
+      const match = src.match(/cc_ft_(\d+)/);
+      const size = match ? parseInt(match[1]) : 0;
+      featuredPhotos.push({ url: src, size });
+    }
+
+    // Check srcset for featured photos
+    if (srcset.includes('photos.zillowstatic.com/fp/') || srcset.includes('zillowstatic.com/fp/')) {
+      const sources = srcset.split(',').map(s => {
+        const parts = s.trim().split(' ');
+        const url = parts[0];
+        const widthMatch = url.match(/cc_ft_(\d+)/);
+        const size = widthMatch ? parseInt(widthMatch[1]) : 0;
+        return { url, size };
+      });
+      featuredPhotos.push(...sources.filter(s => s.url.includes('/fp/')));
+    }
+  }
+
+  // Return the largest featured photo found
+  if (featuredPhotos.length > 0) {
+    const largest = featuredPhotos.reduce((max, curr) =>
+      curr.size > max.size ? curr : max
+    );
+    return largest.url;
+  }
+
+  // Fallback to old method if no featured photos found
+  return null;
+}
+
+/**
+ * Get the best quality image URL (prefer srcset if available)
+ * @param {HTMLImageElement} img - The image element
+ * @returns {string} - The best image URL
+ */
+function getBestImageUrl(img) {
+  const srcset = img.srcset;
+  if (srcset) {
+    // Parse srcset and get the largest image
+    const sources = srcset.split(',').map(s => {
+      const parts = s.trim().split(' ');
+      const url = parts[0];
+      const width = parts[1] ? parseInt(parts[1]) : 0;
+      return { url, width };
+    });
+    const largest = sources.reduce((max, curr) =>
+      curr.width > max.width ? curr : max
+    );
+    return largest.url;
+  }
+  return img.src;
+}
+
+/**
  * Extract property data from Zillow listing page
  * @returns {Object} - Extracted property data
  */
@@ -173,6 +310,7 @@ function extractZillowData() {
       lotSize: lotSize,
       yearBuilt: yearBuilt,
       listingUrl: window.location.href,
+      imageUrl: extractImageUrl(),
     };
   } catch (error) {
     console.error("Error extracting Zillow data:", error);
