@@ -108,3 +108,50 @@ if (browser) {
 1. `authStore` - Listens to Firebase Auth state
 2. `userProfileStore` - Listens to authStore, then Firestore (wait for initialized!)
 3. Components - Listen to both stores with proper loading states
+
+## Svelte 5 Runes Mode
+
+### The Problem
+This project uses Svelte 5 with runes mode enabled. The old Svelte 4 reactive statement syntax (`$:`) is **not allowed** and will cause build failures.
+
+**Symptom**: Build fails with error like:
+```
+`$:` is not allowed in runes mode, use `$derived` or `$effect` instead
+```
+
+### The Solution
+**Use `$derived` for reactive values and `$effect` for side effects:**
+
+```typescript
+// ❌ BAD - Svelte 4 syntax (not allowed in runes mode)
+$: isOwner = $userProfileStore.profile?.role === 'owner';
+$: familyId = $userProfileStore.profile?.familyId;
+
+// ✅ GOOD - Svelte 5 runes syntax
+const isOwner = $derived($userProfileStore.profile?.role === 'owner');
+const familyId = $derived($userProfileStore.profile?.familyId);
+```
+
+### Common Runes Patterns
+
+**State (replaces `let` with reactive updates):**
+```typescript
+let count = $state(0);
+let items = $state<Item[]>([]);
+```
+
+**Derived values (replaces `$:` reactive statements):**
+```typescript
+const doubled = $derived(count * 2);
+const isEmpty = $derived(items.length === 0);
+```
+
+**Effects (replaces `$:` statements with side effects):**
+```typescript
+$effect(() => {
+  console.log(`Count changed to ${count}`);
+});
+```
+
+### Real Example from This Codebase
+See `src/routes/family/+page.svelte:17-18` for proper usage of `$derived` with store subscriptions.
