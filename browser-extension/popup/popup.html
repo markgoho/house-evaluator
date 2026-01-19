@@ -1,41 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>House Evaluator Helper</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="popup-container">
-    <h1>🏠 House Evaluator Helper</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>House Evaluator Helper</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <h1>🏠 House Evaluator Helper</h1>
 
-    <div id="loading" class="section hidden">
-      <div class="spinner"></div>
-      <p>Extracting property data...</p>
-    </div>
+      <div id="loading" class="section hidden">
+        <div class="spinner"></div>
+        <p>Extracting property data...</p>
+      </div>
 
-    <div id="extracted-data" class="section hidden">
-      <h2>Extracted Data:</h2>
-      <ul id="data-list"></ul>
-      <button id="open-app" class="btn-primary">Open in House Evaluator</button>
-    </div>
+      <div id="extracted-data" class="section hidden">
+        <h2>Extracted Data:</h2>
+        <ul id="data-list"></ul>
+        <button id="open-app" class="btn-primary">
+          Open in House Evaluator
+        </button>
+      </div>
 
-    <div id="error" class="section hidden">
-      <p class="error-text">⚠️ Could not extract data from this page.</p>
-      <p class="hint">Make sure you're on a property listing page (not search results).</p>
-    </div>
+      <div id="error" class="section hidden">
+        <p class="error-text">⚠️ Could not extract data from this page.</p>
+        <p class="hint">
+          Make sure you're on a property listing page (not search results).
+        </p>
+      </div>
 
-    <div id="unsupported" class="section hidden">
-      <p class="info-text">ℹ️ This site is not yet supported.</p>
-      <p class="hint">Supported sites:</p>
-      <ul class="supported-sites">
-        <li>Zillow.com</li>
-        <li>Redfin.com</li>
-        <li>Realtor.com</li>
-      </ul>
+      <div id="unsupported" class="section hidden">
+        <p class="info-text">ℹ️ This site is not yet supported.</p>
+        <p class="hint">Supported sites:</p>
+        <ul class="supported-sites">
+          <li>Zillow.com</li>
+          <li>Redfin.com</li>
+          <li>Realtor.com</li>
+        </ul>
+      </div>
     </div>
-  </div>
-  <script src="popup.js"></script>
-</body>
+    <script src="popup.js"></script>
+  </body>
 </html>

@@ -49,6 +49,7 @@ Automatically extract property data from real estate listing sites and auto-fill
 ### Step 1: Browse Listings
 
 Navigate to a property listing page on one of these supported sites:
+
 - **Zillow**: `https://www.zillow.com/homedetails/...`
 - **Redfin**: `https://www.redfin.com/...`
 - **Realtor.com**: `https://www.realtor.com/...`
@@ -77,16 +78,19 @@ After the house is created, you'll be redirected to the house details page where
 ## Supported Sites
 
 ### Zillow.com
+
 - Fully supported for sale and rent listings
 - Extracts all standard property fields
 - Works with most listing types
 
 ### Redfin.com
+
 - Fully supported for sale and rent listings
 - Extracts all standard property fields
 - Works with most listing types
 
 ### Realtor.com
+
 - Fully supported for sale and rent listings
 - Extracts all standard property fields
 - Works with most listing types
@@ -102,7 +106,7 @@ To use the production app instead:
 1. Open `popup/popup.js`
 2. Change the `BASE_URL` constant:
    ```javascript
-   const BASE_URL = 'https://house-eval.web.app/houses/new';
+   const BASE_URL = "https://house-eval.web.app/houses/new";
    ```
 3. Reload the extension in your browser
 
@@ -111,11 +115,13 @@ To use the production app instead:
 ### "Could not extract data from this page"
 
 **Possible causes:**
+
 - You're on a search results page, not an individual listing
 - The listing has incomplete information
 - The site has changed its layout (extractors may need updating)
 
 **Solutions:**
+
 - Make sure you're on a property details page (not search results)
 - Try refreshing the page and clicking the extension icon again
 - Check the browser console for error messages (F12 → Console tab)
@@ -127,11 +133,13 @@ The extension only works on Zillow, Redfin, and Realtor.com. Other real estate s
 ### Extension icon not appearing
 
 **Chrome:**
+
 - Check that the extension is enabled in `chrome://extensions`
 - Try reloading the extension
 - Make sure all required files are present (manifest.json, icons, etc.)
 
 **Firefox:**
+
 - Temporary add-ons are removed when Firefox closes
 - Reload the extension from `about:debugging`
 
@@ -144,6 +152,7 @@ The extension only works on Zillow, Redfin, and Realtor.com. Other real estate s
 ### Missing or incorrect data
 
 Some listings may have incomplete information. The extension extracts what's available:
+
 - Missing fields will be left blank in House Evaluator
 - Fill them in manually before submitting
 - Some sites format data differently (e.g., "2.5 ba" vs "2.5 Baths")
@@ -233,6 +242,7 @@ The extension requires minimal permissions:
 - **host_permissions**: Access Zillow, Redfin, and Realtor.com pages
 
 **Data handling:**
+
 - All data extraction happens locally in your browser
 - No data is sent to external servers
 - Data is only transferred to your local House Evaluator app via URL parameters
@@ -266,6 +276,7 @@ Potential improvements for future versions:
 Before considering the extension production-ready:
 
 ### Chrome Testing
+
 - [ ] Load extension in Chrome
 - [ ] Test on Zillow listing
 - [ ] Test on Redfin listing
@@ -276,10 +287,12 @@ Before considering the extension production-ready:
 - [ ] Test error handling (non-listing pages)
 
 ### Firefox Testing
+
 - [ ] Load extension in Firefox
 - [ ] Repeat all Chrome tests above
 
 ### Edge Cases
+
 - [ ] Listing with special characters in address
 - [ ] Listing with no price (e.g., "Contact for price")
 - [ ] Listing with incomplete data
@@ -302,6 +315,7 @@ This extension is part of the House Evaluator project and follows the same licen
 ## Support
 
 For issues or questions:
+
 1. Check the Troubleshooting section above
 2. Review browser console for errors (F12 → Console)
 3. Verify you're on a supported listing page

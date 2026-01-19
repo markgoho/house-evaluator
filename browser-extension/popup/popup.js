@@ -3,21 +3,21 @@
  * Handles the extension popup UI and communication with content scripts
  */
 
-const BASE_URL = 'http://localhost:5173/houses/new';
+const BASE_URL = "http://localhost:5173/houses/new";
 
 // Format field names for display
 const FIELD_LABELS = {
-  address: 'Street Address',
-  city: 'City',
-  state: 'State',
-  zipCode: 'ZIP Code',
-  price: 'Price',
-  bedrooms: 'Bedrooms',
-  bathrooms: 'Bathrooms',
-  squareFeet: 'Square Feet',
-  lotSize: 'Lot Size',
-  yearBuilt: 'Year Built',
-  listingUrl: 'Listing URL'
+  address: "Street Address",
+  city: "City",
+  state: "State",
+  zipCode: "ZIP Code",
+  price: "Price",
+  bedrooms: "Bedrooms",
+  bathrooms: "Bathrooms",
+  squareFeet: "Square Feet",
+  lotSize: "Lot Size",
+  yearBuilt: "Year Built",
+  listingUrl: "Listing URL",
 };
 
 /**
@@ -30,16 +30,16 @@ function formatValue(key, value) {
   if (value === null || value === undefined) return null;
 
   switch (key) {
-    case 'price':
+    case "price":
       return `$${value.toLocaleString()}`;
-    case 'squareFeet':
-    case 'lotSize':
+    case "squareFeet":
+    case "lotSize":
       return `${value.toLocaleString()} sq ft`;
-    case 'bathrooms':
+    case "bathrooms":
       return value % 1 === 0 ? value.toString() : value.toFixed(1);
-    case 'listingUrl':
+    case "listingUrl":
       // Truncate long URLs
-      return value.length > 50 ? value.substring(0, 47) + '...' : value;
+      return value.length > 50 ? value.substring(0, 47) + "..." : value;
     default:
       return value.toString();
   }
@@ -50,7 +50,7 @@ function formatValue(key, value) {
  */
 function showLoading() {
   hideAllSections();
-  document.getElementById('loading').classList.remove('hidden');
+  document.getElementById("loading").classList.remove("hidden");
 }
 
 /**
@@ -60,25 +60,25 @@ function showLoading() {
 function showExtractedData(data) {
   hideAllSections();
 
-  const container = document.getElementById('extracted-data');
-  container.classList.remove('hidden');
+  const container = document.getElementById("extracted-data");
+  container.classList.remove("hidden");
 
-  const dataList = document.getElementById('data-list');
-  dataList.innerHTML = '';
+  const dataList = document.getElementById("data-list");
+  dataList.innerHTML = "";
 
   // Display extracted fields
   let hasData = false;
   for (const [key, value] of Object.entries(data)) {
-    if (value !== null && value !== undefined && value !== '') {
+    if (value !== null && value !== undefined && value !== "") {
       hasData = true;
-      const li = document.createElement('li');
+      const li = document.createElement("li");
 
-      const label = document.createElement('span');
-      label.className = 'field-label';
+      const label = document.createElement("span");
+      label.className = "field-label";
       label.textContent = FIELD_LABELS[key] || key;
 
-      const valueSpan = document.createElement('span');
-      valueSpan.className = 'field-value';
+      const valueSpan = document.createElement("span");
+      valueSpan.className = "field-value";
       valueSpan.textContent = formatValue(key, value);
 
       li.appendChild(label);
@@ -93,12 +93,12 @@ function showExtractedData(data) {
   }
 
   // Set up button to open House Evaluator
-  document.getElementById('open-app').addEventListener('click', () => {
+  document.getElementById("open-app").addEventListener("click", () => {
     const params = new URLSearchParams();
 
     // Add all non-null fields to URL params
     for (const [key, value] of Object.entries(data)) {
-      if (value !== null && value !== undefined && value !== '') {
+      if (value !== null && value !== undefined && value !== "") {
         params.append(key, value.toString());
       }
     }
@@ -113,7 +113,7 @@ function showExtractedData(data) {
  */
 function showError() {
   hideAllSections();
-  document.getElementById('error').classList.remove('hidden');
+  document.getElementById("error").classList.remove("hidden");
 }
 
 /**
@@ -121,17 +121,17 @@ function showError() {
  */
 function showUnsupported() {
   hideAllSections();
-  document.getElementById('unsupported').classList.remove('hidden');
+  document.getElementById("unsupported").classList.remove("hidden");
 }
 
 /**
  * Hide all sections
  */
 function hideAllSections() {
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('extracted-data').classList.add('hidden');
-  document.getElementById('error').classList.add('hidden');
-  document.getElementById('unsupported').classList.add('hidden');
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("extracted-data").classList.add("hidden");
+  document.getElementById("error").classList.add("hidden");
+  document.getElementById("unsupported").classList.add("hidden");
 }
 
 /**
@@ -141,9 +141,9 @@ function hideAllSections() {
  */
 function isSupportedSite(url) {
   return (
-    url.includes('zillow.com') ||
-    url.includes('redfin.com') ||
-    url.includes('realtor.com')
+    url.includes("zillow.com") ||
+    url.includes("redfin.com") ||
+    url.includes("realtor.com")
   );
 }
 
@@ -153,7 +153,10 @@ function isSupportedSite(url) {
 async function init() {
   try {
     // Get current tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
 
     if (!tab || !tab.url) {
       showError();
@@ -170,9 +173,9 @@ async function init() {
     showLoading();
 
     // Request data extraction from content script
-    chrome.tabs.sendMessage(tab.id, { action: 'extractData' }, (response) => {
+    chrome.tabs.sendMessage(tab.id, { action: "extractData" }, (response) => {
       if (chrome.runtime.lastError) {
-        console.error('Error:', chrome.runtime.lastError);
+        console.error("Error:", chrome.runtime.lastError);
         showError();
         return;
       }
@@ -184,10 +187,10 @@ async function init() {
       }
     });
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
     showError();
   }
 }
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener("DOMContentLoaded", init);

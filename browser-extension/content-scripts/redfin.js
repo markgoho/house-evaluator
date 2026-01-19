@@ -23,8 +23,8 @@ function extractNumber(selector) {
   if (!text) return null;
 
   // Remove non-numeric characters except dots and commas
-  const cleaned = text.replace(/[^0-9.,]/g, '');
-  const num = cleaned.replace(/,/g, '');
+  const cleaned = text.replace(/[^0-9.,]/g, "");
+  const num = cleaned.replace(/,/g, "");
 
   return num ? Number.parseFloat(num) : null;
 }
@@ -40,14 +40,16 @@ function parseAddress(fullAddress) {
   }
 
   // Try to match: street address, city, state ZIP
-  const match = fullAddress.match(/^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+  const match = fullAddress.match(
+    /^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/,
+  );
 
   if (match) {
     return {
       address: match[1].trim(),
       city: match[2].trim(),
       state: match[3].trim(),
-      zipCode: match[4].trim()
+      zipCode: match[4].trim(),
     };
   }
 
@@ -56,7 +58,7 @@ function parseAddress(fullAddress) {
     address: fullAddress,
     city: null,
     state: null,
-    zipCode: null
+    zipCode: null,
   };
 }
 
@@ -68,7 +70,7 @@ function extractRedfinData() {
   try {
     // Extract full address
     const fullAddress =
-      extractText('.street-address') ||
+      extractText(".street-address") ||
       extractText('[class*="address"]') ||
       extractText('h1[class*="full-address"]') ||
       null;
@@ -77,39 +79,39 @@ function extractRedfinData() {
 
     // Extract price - Redfin typically shows price prominently
     const price =
-      extractNumber('.statsValue') ||
+      extractNumber(".statsValue") ||
       extractNumber('[data-rf-test-id="abp-price"] .statsValue') ||
-      extractNumber('.price-section .statsValue') ||
+      extractNumber(".price-section .statsValue") ||
       null;
 
     // Extract bedrooms
     const bedrooms =
-      extractNumber('.beds .statsValue') ||
+      extractNumber(".beds .statsValue") ||
       extractNumber('[data-rf-test-id="abp-beds"] .statsValue') ||
       null;
 
     // Extract bathrooms
     const bathrooms =
-      extractNumber('.baths .statsValue') ||
+      extractNumber(".baths .statsValue") ||
       extractNumber('[data-rf-test-id="abp-baths"] .statsValue') ||
       null;
 
     // Extract square feet
     const squareFeet =
       extractNumber('[data-rf-test-id="abp-sqFt"] .statsValue') ||
-      extractNumber('.sqft .statsValue') ||
+      extractNumber(".sqft .statsValue") ||
       null;
 
     // Extract lot size
     const lotSize =
       extractNumber('[data-rf-test-id="abp-lotSize"] .statsValue') ||
-      extractNumber('.lot-size .statsValue') ||
+      extractNumber(".lot-size .statsValue") ||
       null;
 
     // Extract year built
     const yearBuilt =
       extractNumber('[data-rf-test-id="abp-yearBuilt"] .statsValue') ||
-      extractNumber('.year-built .statsValue') ||
+      extractNumber(".year-built .statsValue") ||
       null;
 
     return {
@@ -123,17 +125,17 @@ function extractRedfinData() {
       squareFeet: squareFeet,
       lotSize: lotSize,
       yearBuilt: yearBuilt,
-      listingUrl: window.location.href
+      listingUrl: window.location.href,
     };
   } catch (error) {
-    console.error('Error extracting Redfin data:', error);
+    console.error("Error extracting Redfin data:", error);
     return null;
   }
 }
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'extractData') {
+  if (request.action === "extractData") {
     const data = extractRedfinData();
     sendResponse(data);
   }

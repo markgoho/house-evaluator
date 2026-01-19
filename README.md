@@ -29,11 +29,13 @@ A collaborative house evaluation app for families, built with SvelteKit and Fire
 ### 1. Install Dependencies
 
 Using Bun (recommended):
+
 ```bash
 bun install
 ```
 
 Or using npm:
+
 ```bash
 npm install
 ```

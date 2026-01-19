@@ -23,8 +23,8 @@ function extractNumber(selector) {
   if (!text) return null;
 
   // Remove non-numeric characters except dots and commas
-  const cleaned = text.replace(/[^0-9.,]/g, '');
-  const num = cleaned.replace(/,/g, '');
+  const cleaned = text.replace(/[^0-9.,]/g, "");
+  const num = cleaned.replace(/,/g, "");
 
   return num ? Number.parseFloat(num) : null;
 }
@@ -41,14 +41,16 @@ function parseAddress(fullAddress) {
   }
 
   // Try to match: street address, city, state ZIP
-  const match = fullAddress.match(/^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+  const match = fullAddress.match(
+    /^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/,
+  );
 
   if (match) {
     return {
       address: match[1].trim(),
       city: match[2].trim(),
       state: match[3].trim(),
-      zipCode: match[4].trim()
+      zipCode: match[4].trim(),
     };
   }
 
@@ -57,7 +59,7 @@ function parseAddress(fullAddress) {
     address: fullAddress,
     city: null,
     state: null,
-    zipCode: null
+    zipCode: null,
   };
 }
 
@@ -67,7 +69,7 @@ function parseAddress(fullAddress) {
  * @returns {string|null} - Matched text or null
  */
 function findTextByPattern(pattern) {
-  const allElements = Array.from(document.querySelectorAll('*'));
+  const allElements = Array.from(document.querySelectorAll("*"));
   for (const element of allElements) {
     if (element.children.length === 0) {
       const text = element.textContent.trim();
@@ -86,7 +88,7 @@ function findTextByPattern(pattern) {
 function extractZillowData() {
   try {
     // Extract full address from h1 tag
-    const fullAddress = extractText('h1');
+    const fullAddress = extractText("h1");
     const addressParts = parseAddress(fullAddress);
 
     // Extract price using data-testid
@@ -113,7 +115,7 @@ function extractZillowData() {
     const sqftText = findTextByPattern(/\d{3,}[\d,]*\s*sqft/i);
     if (sqftText) {
       const match = sqftText.match(/\d{1,3}(,\d{3})*/);
-      if (match) squareFeet = Number.parseInt(match[0].replace(/,/g, ''), 10);
+      if (match) squareFeet = Number.parseInt(match[0].replace(/,/g, ""), 10);
     }
 
     // Extract lot size - look for "Lot:" or "Lot size:" followed by value
@@ -121,7 +123,7 @@ function extractZillowData() {
     const lotText = findTextByPattern(/^Lot(\s+size)?:\s*[\d,]+/i);
     if (lotText) {
       const match = lotText.match(/\d{1,3}(,\d{3})*/);
-      if (match) lotSize = Number.parseInt(match[0].replace(/,/g, ''), 10);
+      if (match) lotSize = Number.parseInt(match[0].replace(/,/g, ""), 10);
     }
 
     // Extract year built - look for "Built in" or "Year built:" followed by year
@@ -143,17 +145,17 @@ function extractZillowData() {
       squareFeet: squareFeet,
       lotSize: lotSize,
       yearBuilt: yearBuilt,
-      listingUrl: window.location.href
+      listingUrl: window.location.href,
     };
   } catch (error) {
-    console.error('Error extracting Zillow data:', error);
+    console.error("Error extracting Zillow data:", error);
     return null;
   }
 }
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'extractData') {
+  if (request.action === "extractData") {
     const data = extractZillowData();
     sendResponse(data);
   }

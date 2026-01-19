@@ -23,8 +23,8 @@ function extractNumber(selector) {
   if (!text) return null;
 
   // Remove non-numeric characters except dots and commas
-  const cleaned = text.replace(/[^0-9.,]/g, '');
-  const num = cleaned.replace(/,/g, '');
+  const cleaned = text.replace(/[^0-9.,]/g, "");
+  const num = cleaned.replace(/,/g, "");
 
   return num ? Number.parseFloat(num) : null;
 }
@@ -40,14 +40,16 @@ function parseAddress(fullAddress) {
   }
 
   // Try to match: street address, city, state ZIP
-  const match = fullAddress.match(/^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+  const match = fullAddress.match(
+    /^([^,]+),\s*([^,]+),\s*([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/,
+  );
 
   if (match) {
     return {
       address: match[1].trim(),
       city: match[2].trim(),
       state: match[3].trim(),
-      zipCode: match[4].trim()
+      zipCode: match[4].trim(),
     };
   }
 
@@ -56,7 +58,7 @@ function parseAddress(fullAddress) {
     address: fullAddress,
     city: null,
     state: null,
-    zipCode: null
+    zipCode: null,
   };
 }
 
@@ -70,7 +72,7 @@ function extractRealtorData() {
     const fullAddress =
       extractText('[data-testid="property-address"]') ||
       extractText('h1[class*="address"]') ||
-      extractText('.listing-address') ||
+      extractText(".listing-address") ||
       null;
 
     const addressParts = parseAddress(fullAddress);
@@ -122,17 +124,17 @@ function extractRealtorData() {
       squareFeet: squareFeet,
       lotSize: lotSize,
       yearBuilt: yearBuilt,
-      listingUrl: window.location.href
+      listingUrl: window.location.href,
     };
   } catch (error) {
-    console.error('Error extracting Realtor.com data:', error);
+    console.error("Error extracting Realtor.com data:", error);
     return null;
   }
 }
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'extractData') {
+  if (request.action === "extractData") {
     const data = extractRealtorData();
     sendResponse(data);
   }
