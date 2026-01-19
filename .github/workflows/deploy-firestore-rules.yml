@@ -1,0 +1,33 @@
+name: Deploy Firestore Rules
+
+on:
+  push:
+    branches:
+      - trunk
+    paths:
+      - 'firestore.rules'
+
+permissions:
+  checks: write
+  contents: read
+
+jobs:
+  deploy_rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Create service account file
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOUSE_EVAL }}' > /home/runner/gcloud-service-key.json
+
+      - name: Deploy Firestore Rules
+        run: bunx firebase deploy --only firestore:rules --project house-eval
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/gcloud-service-key.json
