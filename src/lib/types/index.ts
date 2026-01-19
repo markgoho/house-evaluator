@@ -4,3 +4,4 @@ export * from './family';
 export * from './house';
 export * from './criterion';
 export * from './rating';
+export * from './join-request';

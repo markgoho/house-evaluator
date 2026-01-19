@@ -10,6 +10,8 @@ import {
 import { getFirestoreInstance } from '$lib/firebase/get-firestore-instance';
 import type { Family, FamilyInput } from '$lib/types';
 import { createDefaultCriteria } from './criterion-service';
+import { updateJoinRequestStatus } from './join-request-service';
+import { createOrUpdateUser } from './user-service';
 
 export async function createFamily(data: FamilyInput): Promise<string> {
 	const db = getFirestoreInstance();
@@ -55,4 +57,39 @@ export async function addFamilyMember(familyId: string, userId: string): Promise
 		memberIds: arrayUnion(userId),
 		updatedAt: serverTimestamp()
 	});
+}
+
+/**
+ * Approve a join request and add the user to the family
+ * This should only be called by the family owner
+ */
+export async function approveJoinRequest(
+	requestId: string,
+	familyId: string,
+	userId: string,
+	userEmail: string,
+	userDisplayName: string
+): Promise<void> {
+	// Add user to family memberIds
+	await addFamilyMember(familyId, userId);
+
+	// Update user profile with familyId
+	await createOrUpdateUser(userId, {
+		email: userEmail,
+		displayName: userDisplayName,
+		photoUrl: null,
+		familyId,
+		role: 'member'
+	});
+
+	// Update join request status to approved
+	await updateJoinRequestStatus(requestId, 'approved');
+}
+
+/**
+ * Deny a join request
+ * This should only be called by the family owner
+ */
+export async function denyJoinRequest(requestId: string): Promise<void> {
+	await updateJoinRequestStatus(requestId, 'denied');
 }
