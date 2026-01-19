@@ -82,6 +82,34 @@ function findTextByPattern(pattern) {
 }
 
 /**
+ * Find all text matches in elements and return the largest number
+ * Useful when multiple elements contain the same type of data
+ * @param {RegExp} pattern - Pattern to match
+ * @param {RegExp} extractPattern - Pattern to extract the number
+ * @returns {number|null} - Largest number found or null
+ */
+function findLargestNumber(pattern, extractPattern) {
+  const allElements = Array.from(document.querySelectorAll("*"));
+  let largestNum = null;
+
+  for (const element of allElements) {
+    if (element.children.length === 0) {
+      const text = element.textContent.trim();
+      if (pattern.test(text)) {
+        const match = text.match(extractPattern);
+        if (match) {
+          const num = Number.parseInt(match[1].replace(/,/g, ""), 10);
+          if (largestNum === null || num > largestNum) {
+            largestNum = num;
+          }
+        }
+      }
+    }
+  }
+  return largestNum;
+}
+
+/**
  * Extract property data from Zillow listing page
  * @returns {Object} - Extracted property data
  */
@@ -110,13 +138,12 @@ function extractZillowData() {
       if (match) bathrooms = Number.parseFloat(match[0]);
     }
 
-    // Extract square feet - look for text containing "sqft" with at least 3 digits
-    let squareFeet = null;
-    const sqftText = findTextByPattern(/\d{3,}[\d,]*\s*sqft/i);
-    if (sqftText) {
-      const match = sqftText.match(/\d{1,3}(,\d{3})*/);
-      if (match) squareFeet = Number.parseInt(match[0].replace(/,/g, ""), 10);
-    }
+    // Extract square feet - find the largest sqft value on the page
+    // (handles cases where multiple elements show square footage)
+    const squareFeet = findLargestNumber(
+      /\d{1,3}(?:,\d{3})*\s*sqft/i,
+      /(\d{1,3}(?:,\d{3})*)\s*sqft/i,
+    );
 
     // Extract lot size - look for "Lot:" or "Lot size:" followed by value
     let lotSize = null;

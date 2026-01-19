@@ -125,6 +125,29 @@ function showUnsupported() {
 }
 
 /**
+ * Show refresh needed message
+ */
+function showRefreshNeeded() {
+  hideAllSections();
+  const section = document.getElementById("refresh-needed");
+  section.classList.remove("hidden");
+
+  // Set up refresh button (remove old listeners first)
+  const btn = document.getElementById("refresh-page");
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  newBtn.addEventListener("click", () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.tabs.reload(tabs[0].id);
+        window.close();
+      }
+    });
+  });
+}
+
+/**
  * Hide all sections
  */
 function hideAllSections() {
@@ -132,6 +155,7 @@ function hideAllSections() {
   document.getElementById("extracted-data").classList.add("hidden");
   document.getElementById("error").classList.add("hidden");
   document.getElementById("unsupported").classList.add("hidden");
+  document.getElementById("refresh-needed").classList.add("hidden");
 }
 
 /**
@@ -145,6 +169,54 @@ function isSupportedSite(url) {
     url.includes("redfin.com") ||
     url.includes("realtor.com")
   );
+}
+
+/**
+ * Try to inject content script manually and retry extraction
+ * @param {Object} tab - Chrome tab object
+ */
+async function tryInjectContentScript(tab) {
+  try {
+    // Determine which content script to inject based on URL
+    let scriptFile;
+    if (tab.url.includes("zillow.com")) {
+      scriptFile = "content-scripts/zillow.js";
+    } else if (tab.url.includes("redfin.com")) {
+      scriptFile = "content-scripts/redfin.js";
+    } else if (tab.url.includes("realtor.com")) {
+      scriptFile = "content-scripts/realtor.js";
+    } else {
+      showError();
+      return;
+    }
+
+    // Inject the content script
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: [scriptFile],
+    });
+
+    // Wait a moment for script to initialize
+    setTimeout(() => {
+      // Retry data extraction
+      chrome.tabs.sendMessage(tab.id, { action: "extractData" }, (response) => {
+        if (chrome.runtime.lastError || !response) {
+          // If injection still didn't work, show refresh message
+          showRefreshNeeded();
+          return;
+        }
+
+        if (response.address) {
+          showExtractedData(response);
+        } else {
+          showError();
+        }
+      });
+    }, 100);
+  } catch (error) {
+    console.error("Failed to inject content script:", error);
+    showRefreshNeeded();
+  }
 }
 
 /**
@@ -175,8 +247,14 @@ async function init() {
     // Request data extraction from content script
     chrome.tabs.sendMessage(tab.id, { action: "extractData" }, (response) => {
       if (chrome.runtime.lastError) {
-        console.error("Error:", chrome.runtime.lastError);
-        showError();
+        console.error("Error sending message:", chrome.runtime.lastError.message);
+
+        // If content script not found, try to inject it
+        if (chrome.runtime.lastError.message.includes("Receiving end does not exist")) {
+          tryInjectContentScript(tab);
+        } else {
+          showError();
+        }
         return;
       }
 
