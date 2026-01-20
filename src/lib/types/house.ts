@@ -29,3 +29,9 @@ export type HouseInput = Omit<
   "id" | "pricePerSqFt" | "createdAt" | "updatedAt"
 >;
 export type HouseUpdate = Partial<HouseInput>;
+
+// Form data that the HouseForm component collects
+export type HouseFormData = Omit<
+  HouseInput,
+  "familyId" | "createdBy" | "photoUrls"
+>;
