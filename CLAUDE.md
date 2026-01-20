@@ -280,3 +280,148 @@ $effect(() => {
 ### Real Example from This Codebase
 
 See `src/routes/family/+page.svelte:17-18` for proper usage of `$derived` with store subscriptions.
+
+## Testing Philosophy - User Behavior First
+
+### Core Principle
+
+This project follows [Testing Library's guiding principles](https://testing-library.com/docs/guiding-principles):
+
+> **"The more your tests resemble the way your software is used, the more confidence they can give you."**
+
+**Test user behavior, not implementation details.**
+
+### ✅ DO: Test What Users See and Do
+
+**Use semantic queries (in priority order):**
+
+```typescript
+// 1. BEST - Accessible roles (how screen readers work)
+screen.getByRole('button', { name: 'Add House' })
+screen.getByRole('heading', { name: 'Houses' })
+screen.getByRole('link', { name: /view listing/i })
+
+// 2. GOOD - Form labels (how users identify fields)
+screen.getByLabelText('Street Address')
+screen.getByLabelText(/city/i)
+
+// 3. GOOD - Text content (what users read)
+screen.getByText('$500,000')
+screen.getByText(/no houses yet/i)
+
+// 4. LAST RESORT - Test IDs only when nothing else works
+screen.getByTestId('complex-widget')
+```
+
+**Test user interactions:**
+
+```typescript
+// ✅ GOOD - Simulate real user actions
+const button = screen.getByRole('button', { name: 'Delete' });
+await fireEvent.click(button);
+
+const input = screen.getByLabelText('Price');
+await fireEvent.input(input, { target: { value: '500000' } });
+```
+
+**Test accessibility:**
+
+```typescript
+// ✅ GOOD - Ensure accessible to all users
+const link = screen.getByRole('link', { name: 'View Listing' });
+expect(link).toHaveAttribute('href', 'https://...');
+expect(link).toHaveAttribute('target', '_blank');
+expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+```
+
+### ❌ DON'T: Test Implementation Details
+
+**Avoid CSS selectors:**
+
+```typescript
+// ❌ BAD - Testing internal structure
+const spinner = container.querySelector('.loading-spinner');
+expect(spinner).toBeInTheDocument();
+
+// ✅ GOOD - Test what user sees
+expect(screen.getByText('Loading...')).toBeVisible();
+```
+
+**Avoid testing HTML elements directly:**
+
+```typescript
+// ❌ BAD - Testing implementation
+const svg = container.querySelector('svg');
+expect(svg).toBeInTheDocument();
+
+// ✅ GOOD - Test the message user reads
+expect(screen.getByText('Error occurred')).toBeVisible();
+```
+
+**Avoid testing internal state:**
+
+```typescript
+// ❌ BAD - Testing component internals
+expect(component.loading).toBe(false);
+expect(component.formData.address).toBe('123 Main St');
+
+// ✅ GOOD - Test visible output
+expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
+expect(screen.getByDisplayValue('123 Main St')).toBeVisible();
+```
+
+### Testing Stack
+
+**Installed tools:**
+- **Vitest** - Fast test runner
+- **@testing-library/svelte** - Component testing utilities
+- **@testing-library/jest-dom** - Better assertions (`toBeVisible`, etc.)
+- **jsdom** - DOM simulation
+
+**Run tests:**
+```bash
+bun test           # Watch mode
+bun test:ui        # Browser UI
+bun test:run       # CI mode (run once)
+```
+
+### Mocking Dependencies
+
+Use Vitest's module mocking (replaces Angular's DI providers):
+
+```typescript
+// Mock services
+vi.mock('$lib/services/house-service', () => ({
+  getHouse: vi.fn().mockResolvedValue(mockHouse),
+  deleteHouse: vi.fn().mockResolvedValue(undefined)
+}));
+
+// Mock stores
+vi.mock('$lib/stores/houses-store', () => ({
+  housesStore: readable({
+    houses: [mockHouse],
+    loading: false,
+    error: null
+  })
+}));
+
+// Spy on specific functions
+const spy = vi.spyOn(houseService, 'getHouse').mockResolvedValue(mockHouse);
+```
+
+### Real Examples
+
+**See test files for patterns:**
+- `src/lib/components/ui/*.test.ts` - Component tests with user behavior focus
+- `src/lib/schemas/*.test.ts` - Validation/business logic tests
+- `src/routes/houses/[id]/components/*.test.ts` - Component tests with props
+- `src/__tests__/component-with-dependencies.example.test.ts` - Mocking examples
+
+**Key principle:** If you can refactor the component without changing the test, it's a good test!
+
+### Remember
+
+- **Users don't care about** CSS classes, component structure, or internal state
+- **Users care about** seeing content, clicking things, and getting feedback
+- **Tests should break** when user experience breaks, not when refactoring code
+- **Use semantic HTML** - makes components accessible AND easier to test
