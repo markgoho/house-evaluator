@@ -1,19 +1,20 @@
 import { z } from 'zod';
+import { RATING, UI } from '$lib/constants';
 
 export const ratingFormSchema = z.object({
-	// criteriaScores is a Record<string, number> where each score is -5 to +5
+	// criteriaScores is a Record<string, number> where each score is min to max
 	criteriaScores: z.record(
 		z.string(),
 		z
 			.number()
 			.int('Score must be a whole number')
-			.min(-5, 'Score must be at least -5')
-			.max(5, 'Score must be at most +5')
+			.min(RATING.MIN, `Score must be at least ${RATING.MIN}`)
+			.max(RATING.MAX, `Score must be at most +${RATING.MAX}`)
 	),
 
 	comments: z
 		.string()
-		.max(1000, 'Comments must be 1000 characters or less')
+		.max(UI.MAX_RATING_COMMENTS_LENGTH, `Comments must be ${UI.MAX_RATING_COMMENTS_LENGTH} characters or less`)
 		.nullable()
 		.transform((value) => (value === '' ? null : value))
 });

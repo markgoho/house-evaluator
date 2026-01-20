@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { House } from '$lib/types';
+	import { ROUTES } from '$lib/constants';
 
 	let {
 		house,
@@ -14,7 +15,7 @@
 
 <header class="page-header">
 	<div class="header-content">
-		<a href="/houses" class="back-link">
+		<a href={ROUTES.HOUSES} class="back-link">
 			<svg
 				width="16"
 				height="16"
@@ -43,7 +44,7 @@
 		<p class="location">{house.city}, {house.state} {house.zipCode}</p>
 	</div>
 	<div class="header-actions">
-		<a href={`/houses/${houseId}/rate`} class="btn-primary">
+		<a href={ROUTES.houseRate(houseId)} class="btn-primary">
 			<svg
 				width="18"
 				height="18"
@@ -61,7 +62,7 @@
 			</svg>
 			<span>Rate House</span>
 		</a>
-		<a href={`/houses/${houseId}/edit`} class="btn-secondary">Edit</a>
+		<a href={ROUTES.houseEdit(houseId)} class="btn-secondary">Edit</a>
 		<button onclick={ondelete} class="btn-danger">Delete</button>
 	</div>
 </header>

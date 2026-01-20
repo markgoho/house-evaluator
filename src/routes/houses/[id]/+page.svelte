@@ -11,6 +11,7 @@
 	import PropertyDetailsCard from './components/property-details-card.svelte';
 	import RatingsCard from './components/ratings-card.svelte';
 	import PhotosCard from './components/photos-card.svelte';
+	import { ROUTES } from '$lib/constants';
 
 	let house = $state<House | null>(null);
 	let ratings = $state<Rating[]>([]);
@@ -77,7 +78,7 @@
 
 		try {
 			await deleteHouse($userProfileStore.profile.familyId, houseId);
-			window.location.href = '/houses';
+			window.location.href = ROUTES.HOUSES;
 		} catch (err) {
 			console.error('Error deleting house:', err);
 			alert('Failed to delete house');
@@ -92,7 +93,7 @@
 		{:else if error || !house}
 			<ErrorState message={error ?? 'House not found'} />
 			<div class="error-actions">
-				<a href="/houses" class="btn-secondary">Back to Houses</a>
+				<a href={ROUTES.HOUSES} class="btn-secondary">Back to Houses</a>
 			</div>
 		{:else}
 			<HouseDetailHeader {house} {houseId} ondelete={handleDelete} />

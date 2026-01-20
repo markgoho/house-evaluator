@@ -6,6 +6,7 @@
 	import { createHouse } from '$lib/services/house-service';
 	import HouseForm from '$lib/components/HouseForm.svelte';
 	import type { HouseFormData } from '$lib/types';
+	import { ROUTES } from '$lib/constants';
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
@@ -110,7 +111,7 @@
 				},
 				sourceImageUrl
 			});
-			goto(`/houses/${houseId}`);
+			goto(ROUTES.houseDetail(houseId));
 		} catch (err) {
 			console.error('Error creating house:', err);
 			error = err instanceof Error ? err.message : 'Failed to create house';
@@ -124,14 +125,14 @@
 	<div class="container">
 		<div class="page-header">
 			<h1>Add New House</h1>
-			<a href="/houses" class="btn-secondary">Cancel</a>
+			<a href={ROUTES.HOUSES} class="btn-secondary">Cancel</a>
 		</div>
 
 		<HouseForm
 			initialData={initialFormData}
 			submitButtonText="Add House"
 			submitButtonLoadingText="Creating..."
-			cancelUrl="/houses"
+			cancelUrl={ROUTES.HOUSES}
 			isSubmitting={loading}
 			errorMessage={error}
 			{sourceImageUrl}

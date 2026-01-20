@@ -2,9 +2,10 @@
 	import { housesStore } from '$lib/stores/houses-store';
 	import { goto } from '$app/navigation';
 	import { LoadingSpinner, EmptyState, ErrorState, PageHeader } from '$lib/components/ui';
+	import { ROUTES } from '$lib/constants';
 
 	function navigateToHouse(houseId: string) {
-		goto(`/houses/${houseId}`);
+		goto(ROUTES.houseDetail(houseId));
 	}
 </script>
 
@@ -12,7 +13,7 @@
 	<div class="container">
 		<PageHeader title="Houses" subtitle="Properties you're considering">
 			{#snippet action()}
-				<a href="/houses/new" class="btn-primary">
+				<a href={ROUTES.HOUSES_NEW} class="btn-primary">
 					<svg
 						width="18"
 						height="18"
@@ -71,7 +72,7 @@
 					</svg>
 				{/snippet}
 				{#snippet action()}
-					<a href="/houses/new" class="btn-primary">
+					<a href={ROUTES.HOUSES_NEW} class="btn-primary">
 						<svg
 							width="18"
 							height="18"

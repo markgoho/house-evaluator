@@ -2,6 +2,7 @@
 	import type { HouseFormData } from '$lib/types';
 	import { houseFormSchema } from '$lib/schemas';
 	import { ZodError } from 'zod';
+	import { PROPERTY } from '$lib/constants';
 
 	interface Props {
 		initialData?: Partial<HouseFormData>;
@@ -211,7 +212,7 @@
 					id="bedrooms"
 					bind:value={bedrooms}
 					placeholder="3"
-					min="0"
+					min={PROPERTY.MIN_BEDROOMS}
 					class:error={validationErrors['bedrooms']}
 				/>
 				{#if validationErrors['bedrooms']}
@@ -225,7 +226,7 @@
 					id="bathrooms"
 					bind:value={bathrooms}
 					placeholder="2"
-					min="0"
+					min={PROPERTY.MIN_BATHROOMS}
 					step="0.5"
 					class:error={validationErrors['bathrooms']}
 				/>
@@ -240,8 +241,8 @@
 					id="yearBuilt"
 					bind:value={yearBuilt}
 					placeholder="1990"
-					min="1800"
-					max={new Date().getFullYear()}
+					min={PROPERTY.MIN_YEAR_BUILT}
+					max={PROPERTY.MAX_YEAR_BUILT}
 					class:error={validationErrors['yearBuilt']}
 				/>
 				{#if validationErrors['yearBuilt']}

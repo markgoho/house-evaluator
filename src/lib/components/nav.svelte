@@ -3,6 +3,7 @@
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { signOut } from '$lib/firebase/sign-out';
 	import { page } from '$app/state';
+	import { ROUTES } from '$lib/constants';
 
 	async function handleSignOut() {
 		try {
@@ -15,8 +16,8 @@
 	$effect(() => {
 		// Automatically redirect to login if not authenticated
 		if ($authStore.initialized && !$authStore.loading && !$authStore.user) {
-			if (page.url.pathname !== '/login') {
-				window.location.href = '/login';
+			if (page.url.pathname !== ROUTES.LOGIN) {
+				window.location.href = ROUTES.LOGIN;
 			}
 		}
 
@@ -28,8 +29,8 @@
 			$userProfileStore.profile &&
 			!$userProfileStore.profile.familyId
 		) {
-			if (page.url.pathname !== '/setup') {
-				window.location.href = '/setup';
+			if (page.url.pathname !== ROUTES.SETUP) {
+				window.location.href = ROUTES.SETUP;
 			}
 		}
 	});
@@ -38,7 +39,7 @@
 {#if $authStore.user}
 	<nav class="navbar">
 		<div class="container nav-content">
-			<a href="/" class="logo">
+			<a href={ROUTES.HOME} class="logo">
 				<span class="logo-mark">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -49,16 +50,16 @@
 			</a>
 
 			<div class="nav-links">
-				<a href="/" class="nav-link" class:active={page.url.pathname === '/'}>
+				<a href={ROUTES.HOME} class="nav-link" class:active={page.url.pathname === ROUTES.HOME}>
 					<span class="nav-link-text">Dashboard</span>
 				</a>
-				<a href="/houses" class="nav-link" class:active={page.url.pathname.startsWith('/houses')}>
+				<a href={ROUTES.HOUSES} class="nav-link" class:active={page.url.pathname.startsWith(ROUTES.HOUSES)}>
 					<span class="nav-link-text">Houses</span>
 				</a>
-				<a href="/criteria" class="nav-link" class:active={page.url.pathname === '/criteria'}>
+				<a href={ROUTES.CRITERIA} class="nav-link" class:active={page.url.pathname === ROUTES.CRITERIA}>
 					<span class="nav-link-text">Criteria</span>
 				</a>
-				<a href="/family" class="nav-link" class:active={page.url.pathname === '/family'}>
+				<a href={ROUTES.FAMILY} class="nav-link" class:active={page.url.pathname === ROUTES.FAMILY}>
 					<span class="nav-link-text">Family</span>
 				</a>
 			</div>

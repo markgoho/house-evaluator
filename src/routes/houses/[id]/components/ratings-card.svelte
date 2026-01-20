@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Rating } from '$lib/types';
+	import { ROUTES, RATING } from '$lib/constants';
 
 	let {
 		ratings,
@@ -35,7 +36,7 @@
 			</div>
 			<p>No ratings yet</p>
 			<span>Be the first to rate this house!</span>
-			<a href={`/houses/${houseId}/rate`} class="btn-primary">Rate Now</a>
+			<a href={ROUTES.houseRate(houseId)} class="btn-primary">Rate Now</a>
 		</div>
 	{:else}
 		<div class="score-display">
@@ -45,7 +46,7 @@
 				class:negative={averageScore < 0}
 			>
 				<span class="score-value">{averageScore > 0 ? '+' : ''}{averageScore}</span>
-				<span class="score-max">/ 5</span>
+				<span class="score-max">/ {RATING.MAX}</span>
 			</div>
 			<p class="score-meta">
 				Average from {ratings.length} rating{ratings.length === 1 ? '' : 's'}

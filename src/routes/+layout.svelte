@@ -6,16 +6,15 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { PUBLIC_PAGES, NO_FAMILY_REQUIRED_PAGES } from '$lib/constants';
 
 	let { children }: { children: any } = $props();
 
 	// Pages that don't require authentication
-	const publicPages = ['/login'];
-	const isPublicPage = $derived(publicPages.includes(page.url.pathname));
+	const isPublicPage = $derived(PUBLIC_PAGES.includes(page.url.pathname));
 
 	// Pages that don't require a family (setup, pending, login)
-	const noFamilyAllowed = ['/setup', '/pending', '/login'];
-	const requiresFamily = $derived(!noFamilyAllowed.includes(page.url.pathname));
+	const requiresFamily = $derived(!NO_FAMILY_REQUIRED_PAGES.includes(page.url.pathname));
 
 	// Redirect to setup if user is logged in but has no family
 	onMount(() => {

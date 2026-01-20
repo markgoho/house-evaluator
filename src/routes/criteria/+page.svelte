@@ -8,13 +8,14 @@
 	} from '$lib/services/criterion-service';
 	import type { CriterionInput } from '$lib/types';
 	import { LoadingSpinner, EmptyState, ErrorState, PageHeader, FormField } from '$lib/components/ui';
+	import { CRITERION_WEIGHT } from '$lib/constants';
 
 	let showAddForm = $state(false);
 	let editingId = $state<string | null>(null);
 
 	let formName = $state('');
 	let formDescription = $state('');
-	let formWeight = $state(5);
+	let formWeight = $state<number>(CRITERION_WEIGHT.DEFAULT);
 
 	let submitting = $state(false);
 	let error = $state<string | null>(null);
@@ -24,7 +25,7 @@
 		editingId = null;
 		formName = '';
 		formDescription = '';
-		formWeight = 5;
+		formWeight = CRITERION_WEIGHT.DEFAULT;
 	}
 
 	function startEditing(criterionId: string) {
@@ -43,7 +44,7 @@
 		editingId = null;
 		formName = '';
 		formDescription = '';
-		formWeight = 5;
+		formWeight = CRITERION_WEIGHT.DEFAULT;
 	}
 
 	async function handleSubmit(e: Event) {
@@ -174,10 +175,17 @@
 					<div class="form-field">
 						<label for="weight">
 							Importance Weight
-							<span class="weight-display">{formWeight} / 10</span>
+							<span class="weight-display">{formWeight} / {CRITERION_WEIGHT.MAX}</span>
 						</label>
 						<div class="range-wrapper">
-							<input type="range" id="weight" bind:value={formWeight} min="1" max="10" step="1" />
+							<input
+								type="range"
+								id="weight"
+								bind:value={formWeight}
+								min={CRITERION_WEIGHT.MIN}
+								max={CRITERION_WEIGHT.MAX}
+								step="1"
+							/>
 							<div class="range-labels">
 								<span>Low</span>
 								<span>High</span>
