@@ -3,7 +3,7 @@
 	import Nav from '$lib/components/nav.svelte';
 	import { authStore } from '$lib/stores/auth-store';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -11,11 +11,11 @@
 
 	// Pages that don't require authentication
 	const publicPages = ['/login'];
-	const isPublicPage = $derived(publicPages.includes($page.url.pathname));
+	const isPublicPage = $derived(publicPages.includes(page.url.pathname));
 
 	// Pages that don't require a family (setup, pending, login)
 	const noFamilyAllowed = ['/setup', '/pending', '/login'];
-	const requiresFamily = $derived(!noFamilyAllowed.includes($page.url.pathname));
+	const requiresFamily = $derived(!noFamilyAllowed.includes(page.url.pathname));
 
 	// Redirect to setup if user is logged in but has no family
 	onMount(() => {

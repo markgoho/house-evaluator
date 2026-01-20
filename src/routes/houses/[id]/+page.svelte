@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { authStore } from '$lib/stores/auth-store';
@@ -12,7 +12,7 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
-	const houseId = $derived($page.params.id);
+	const houseId = $derived(page.params.id);
 	const averageScore = $derived(
 		ratings.length > 0
 			? Math.round((ratings.reduce((sum, r) => sum + r.overallScore, 0) / ratings.length) * 10) / 10

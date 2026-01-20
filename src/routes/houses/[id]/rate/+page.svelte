@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
@@ -18,7 +18,7 @@
 	let criteriaScores = $state<Record<string, number>>({});
 	let comments = $state('');
 
-	const houseId = $derived($page.params.id);
+	const houseId = $derived(page.params.id);
 
 	onMount(async () => {
 		await loadHouse();

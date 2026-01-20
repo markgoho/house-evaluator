@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { getHouse, updateHouse } from '$lib/services/house-service';
@@ -12,7 +12,7 @@
 	let saving = $state(false);
 	let error = $state<string | null>(null);
 
-	const houseId = $derived($page.params.id);
+	const houseId = $derived(page.params.id);
 
 	onMount(async () => {
 		if (!$userProfileStore.initialized) {

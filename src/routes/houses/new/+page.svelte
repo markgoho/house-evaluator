@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { authStore } from '$lib/stores/auth-store';
 	import { createHouse } from '$lib/services/house-service';
@@ -10,12 +9,11 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
-	let initialFormData = $state<Partial<HouseFormData>>({});
 	let sourceImageUrl = $state<string | undefined>(undefined);
 
-	// Parse URL parameters on mount to pre-fill form
-	onMount(() => {
-		const params = $page.url.searchParams;
+	// Parse URL parameters from page state (reactive)
+	const initialFormData = $derived.by(() => {
+		const params = page.url.searchParams;
 
 		// Build initial form data from URL params
 		const formData: Partial<HouseFormData> = {};
@@ -85,7 +83,7 @@
 			sourceImageUrl = imageUrlParam;
 		}
 
-		initialFormData = formData;
+		return formData;
 	});
 
 	async function handleSubmit(formData: HouseFormData) {

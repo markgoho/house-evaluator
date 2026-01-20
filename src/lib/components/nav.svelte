@@ -2,7 +2,7 @@
 	import { authStore } from '$lib/stores/auth-store';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
 	import { signOut } from '$lib/firebase/sign-out';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	async function handleSignOut() {
 		try {
@@ -15,7 +15,7 @@
 	$effect(() => {
 		// Automatically redirect to login if not authenticated
 		if ($authStore.initialized && !$authStore.loading && !$authStore.user) {
-			if ($page.url.pathname !== '/login') {
+			if (page.url.pathname !== '/login') {
 				window.location.href = '/login';
 			}
 		}
@@ -28,7 +28,7 @@
 			$userProfileStore.profile &&
 			!$userProfileStore.profile.familyId
 		) {
-			if ($page.url.pathname !== '/setup') {
+			if (page.url.pathname !== '/setup') {
 				window.location.href = '/setup';
 			}
 		}
@@ -49,16 +49,16 @@
 			</a>
 
 			<div class="nav-links">
-				<a href="/" class="nav-link" class:active={$page.url.pathname === '/'}>
+				<a href="/" class="nav-link" class:active={page.url.pathname === '/'}>
 					<span class="nav-link-text">Dashboard</span>
 				</a>
-				<a href="/houses" class="nav-link" class:active={$page.url.pathname.startsWith('/houses')}>
+				<a href="/houses" class="nav-link" class:active={page.url.pathname.startsWith('/houses')}>
 					<span class="nav-link-text">Houses</span>
 				</a>
-				<a href="/criteria" class="nav-link" class:active={$page.url.pathname === '/criteria'}>
+				<a href="/criteria" class="nav-link" class:active={page.url.pathname === '/criteria'}>
 					<span class="nav-link-text">Criteria</span>
 				</a>
-				<a href="/family" class="nav-link" class:active={$page.url.pathname === '/family'}>
+				<a href="/family" class="nav-link" class:active={page.url.pathname === '/family'}>
 					<span class="nav-link-text">Family</span>
 				</a>
 			</div>
