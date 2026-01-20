@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { housesStore } from '$lib/stores/houses-store';
 	import { goto } from '$app/navigation';
+	import { LoadingSpinner, EmptyState, ErrorState, PageHeader } from '$lib/components/ui';
 
 	function navigateToHouse(houseId: string) {
 		goto(`/houses/${houseId}`);
@@ -9,52 +10,94 @@
 
 <div class="houses-page">
 	<div class="container">
-		<header class="page-header">
-			<div class="header-content">
-				<h1>Houses</h1>
-				<p class="header-subtitle">Properties you're considering</p>
-			</div>
-			<a href="/houses/new" class="btn-primary">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M12 5V19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-				<span>Add House</span>
-			</a>
-		</header>
+		<PageHeader title="Houses" subtitle="Properties you're considering">
+			{#snippet action()}
+				<a href="/houses/new" class="btn-primary">
+					<svg
+						width="18"
+						height="18"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M12 5V19"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<path
+							d="M5 12H19"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					<span>Add House</span>
+				</a>
+			{/snippet}
+		</PageHeader>
 
 		{#if $housesStore.loading}
-			<div class="loading-state">
-				<div class="loading-spinner"></div>
-				<p>Loading houses...</p>
-			</div>
+			<LoadingSpinner message="Loading houses..." />
 		{:else if $housesStore.error}
-			<div class="error-state">
-				<svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-					<path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-					<circle cx="12" cy="16" r="1" fill="currentColor"/>
-				</svg>
-				<p>{$housesStore.error}</p>
-			</div>
+			<ErrorState message={$housesStore.error} />
 		{:else if $housesStore.houses.length === 0}
-			<div class="empty-state">
-				<div class="empty-illustration">
-					<svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V9.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-						<path d="M9 21V12H15V21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+			<EmptyState title="No houses yet" description="Start by adding your first property to evaluate">
+				{#snippet icon()}
+					<svg
+						width="80"
+						height="80"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M3 9.5L12 3L21 9.5V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V9.5Z"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<path
+							d="M9 21V12H15V21"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
-				</div>
-				<h2>No houses yet</h2>
-				<p>Start by adding your first property to evaluate</p>
-				<a href="/houses/new" class="btn-primary">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M12 5V19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-						<path d="M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-					<span>Add Your First House</span>
-				</a>
-			</div>
+				{/snippet}
+				{#snippet action()}
+					<a href="/houses/new" class="btn-primary">
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 5V19"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M5 12H19"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+						<span>Add Your First House</span>
+					</a>
+				{/snippet}
+			</EmptyState>
 		{:else}
 			<div class="houses-grid">
 				{#each $housesStore.houses as house (house.id)}
@@ -117,27 +160,6 @@
 		padding: var(--spacing-xl) 0 var(--spacing-3xl);
 	}
 
-	.page-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: var(--spacing-xl);
-		gap: var(--spacing-md);
-	}
-
-	.header-content h1 {
-		font-family: var(--font-display);
-		font-size: var(--font-size-2xl);
-		font-weight: 600;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-xs);
-	}
-
-	.header-subtitle {
-		font-size: var(--font-size-base);
-		color: var(--color-text-secondary);
-	}
-
 	.btn-primary {
 		display: inline-flex;
 		align-items: center;
@@ -156,84 +178,6 @@
 	.btn-primary:hover {
 		background: var(--color-primary-dark);
 		box-shadow: var(--shadow-primary);
-	}
-
-	/* Loading State */
-	.loading-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--spacing-3xl);
-		color: var(--color-text-secondary);
-	}
-
-	.loading-spinner {
-		width: 40px;
-		height: 40px;
-		border: 3px solid var(--color-border);
-		border-top-color: var(--color-primary);
-		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
-		margin-bottom: var(--spacing-md);
-	}
-
-	@keyframes spin {
-		to { transform: rotate(360deg); }
-	}
-
-	/* Error State */
-	.error-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--spacing-3xl);
-		color: var(--color-error);
-		text-align: center;
-	}
-
-	.error-state svg {
-		margin-bottom: var(--spacing-md);
-		opacity: 0.6;
-	}
-
-	/* Empty State */
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--spacing-3xl);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border-light);
-		border-radius: var(--radius-xl);
-		text-align: center;
-	}
-
-	.empty-illustration {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 120px;
-		height: 120px;
-		background: var(--color-primary-subtle);
-		color: var(--color-primary);
-		border-radius: var(--radius-xl);
-		margin-bottom: var(--spacing-lg);
-	}
-
-	.empty-state h2 {
-		font-family: var(--font-display);
-		font-size: var(--font-size-xl);
-		font-weight: 600;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-sm);
-	}
-
-	.empty-state p {
-		color: var(--color-text-secondary);
-		margin-bottom: var(--spacing-lg);
 	}
 
 	/* Houses Grid */
@@ -364,11 +308,6 @@
 	@media (max-width: 767px) {
 		.houses-page {
 			padding: var(--spacing-md) 0 var(--spacing-xl);
-		}
-
-		.page-header {
-			flex-direction: column;
-			align-items: stretch;
 		}
 
 		.btn-primary {

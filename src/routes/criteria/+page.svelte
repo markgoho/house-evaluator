@@ -7,6 +7,7 @@
 		deleteCriterion
 	} from '$lib/services/criterion-service';
 	import type { CriterionInput } from '$lib/types';
+	import { LoadingSpinner, EmptyState, ErrorState, PageHeader, FormField } from '$lib/components/ui';
 
 	let showAddForm = $state(false);
 	let editingId = $state<string | null>(null);
@@ -100,21 +101,37 @@
 
 <div class="criteria-page">
 	<div class="container">
-		<header class="page-header">
-			<div class="header-content">
-				<h1>Rating Criteria</h1>
-				<p class="header-subtitle">Customize the criteria used to evaluate houses</p>
-			</div>
-			{#if !showAddForm}
-				<button onclick={startAdding} class="btn-primary">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M12 5V19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-						<path d="M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-					<span>Add Criterion</span>
-				</button>
-			{/if}
-		</header>
+		<PageHeader title="Rating Criteria" subtitle="Customize the criteria used to evaluate houses">
+			{#snippet action()}
+				{#if !showAddForm}
+					<button onclick={startAdding} class="btn-primary">
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 5V19"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M5 12H19"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+						<span>Add Criterion</span>
+					</button>
+				{/if}
+			{/snippet}
+		</PageHeader>
 
 		{#if error}
 			<div class="error-banner">
@@ -181,22 +198,41 @@
 
 		<div class="criteria-list">
 			{#if $criteriaStore.loading}
-				<div class="loading-state">
-					<div class="loading-spinner"></div>
-					<p>Loading criteria...</p>
-				</div>
+				<LoadingSpinner message="Loading criteria..." />
 			{:else if $criteriaStore.criteria.length === 0}
-				<div class="empty-state">
-					<div class="empty-illustration">
-						<svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 20V10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M18 20V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M6 20V16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				<EmptyState title="No criteria yet" description="Add your first criterion to start rating houses">
+					{#snippet icon()}
+						<svg
+							width="64"
+							height="64"
+							viewBox="0 0 24 24"
+							fill="none"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M12 20V10"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M18 20V4"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+							<path
+								d="M6 20V16"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
-					</div>
-					<h2>No criteria yet</h2>
-					<p>Add your first criterion to start rating houses</p>
-				</div>
+					{/snippet}
+				</EmptyState>
 			{:else}
 				{#each $criteriaStore.criteria as criterion (criterion.id)}
 					<div class="criterion-card">
@@ -245,27 +281,6 @@
 	.criteria-page {
 		min-height: calc(100vh - 70px);
 		padding: var(--spacing-xl) 0 var(--spacing-3xl);
-	}
-
-	.page-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		margin-bottom: var(--spacing-xl);
-		gap: var(--spacing-md);
-	}
-
-	.header-content h1 {
-		font-family: var(--font-display);
-		font-size: var(--font-size-2xl);
-		font-weight: 600;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-xs);
-	}
-
-	.header-subtitle {
-		font-size: var(--font-size-base);
-		color: var(--color-text-secondary);
 	}
 
 	/* Buttons */
@@ -430,67 +445,6 @@
 		margin-top: var(--spacing-lg);
 	}
 
-	/* Loading State */
-	.loading-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--spacing-3xl);
-		color: var(--color-text-secondary);
-	}
-
-	.loading-spinner {
-		width: 40px;
-		height: 40px;
-		border: 3px solid var(--color-border);
-		border-top-color: var(--color-primary);
-		border-radius: 50%;
-		animation: spin 0.8s linear infinite;
-		margin-bottom: var(--spacing-md);
-	}
-
-	@keyframes spin {
-		to { transform: rotate(360deg); }
-	}
-
-	/* Empty State */
-	.empty-state {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: var(--spacing-3xl);
-		background: var(--color-surface);
-		border: 1px solid var(--color-border-light);
-		border-radius: var(--radius-xl);
-		text-align: center;
-	}
-
-	.empty-illustration {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100px;
-		height: 100px;
-		background: var(--color-primary-subtle);
-		color: var(--color-primary);
-		border-radius: var(--radius-xl);
-		margin-bottom: var(--spacing-lg);
-	}
-
-	.empty-state h2 {
-		font-family: var(--font-display);
-		font-size: var(--font-size-xl);
-		font-weight: 600;
-		color: var(--color-text-primary);
-		margin-bottom: var(--spacing-sm);
-	}
-
-	.empty-state p {
-		color: var(--color-text-secondary);
-	}
-
 	/* Criteria List */
 	.criteria-list {
 		display: flex;
@@ -593,11 +547,6 @@
 	@media (max-width: 767px) {
 		.criteria-page {
 			padding: var(--spacing-md) 0 var(--spacing-xl);
-		}
-
-		.page-header {
-			flex-direction: column;
-			align-items: stretch;
 		}
 
 		.btn-primary {
