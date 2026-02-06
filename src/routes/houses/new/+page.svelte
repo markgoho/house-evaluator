@@ -10,7 +10,8 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
-	let sourceImageUrl = $state<string | undefined>(undefined);
+	// Image URL from extension (derived from URL params)
+	const sourceImageUrl = $derived(page.url.searchParams.get('imageUrl') ?? undefined);
 
 	// Parse URL parameters from page state (reactive)
 	const initialFormData = $derived.by(() => {
@@ -76,12 +77,6 @@
 		if (lotSizeParam) {
 			const parsed = Number.parseInt(lotSizeParam, 10);
 			if (!Number.isNaN(parsed) && parsed > 0) formData.lotSize = parsed;
-		}
-
-		// Image URL from extension
-		const imageUrlParam = params.get('imageUrl');
-		if (imageUrlParam) {
-			sourceImageUrl = imageUrlParam;
 		}
 
 		return formData;
