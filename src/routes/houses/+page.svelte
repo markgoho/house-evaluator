@@ -133,12 +133,18 @@
 											<span class="detail-value">{house.bedrooms ?? '?'} / {house.bathrooms ?? '?'}</span>
 										</div>
 									{/if}
-									{#if house.squareFeet}
-										<div class="detail-item">
-											<span class="detail-label">Sq Ft</span>
-											<span class="detail-value">{house.squareFeet.toLocaleString()}</span>
-										</div>
-									{/if}
+								{#if house.squareFeet}
+									<div class="detail-item">
+										<span class="detail-label">Sq Ft</span>
+										<span class="detail-value">{house.squareFeet.toLocaleString()}</span>
+									</div>
+								{/if}
+								{#if house.price && house.squareFeet}
+									<div class="detail-item">
+										<span class="detail-label">$/Sq Ft</span>
+										<span class="detail-value">${Math.round(house.price / house.squareFeet).toLocaleString()}</span>
+									</div>
+								{/if}
 								</div>
 							</div>
 						</div>
