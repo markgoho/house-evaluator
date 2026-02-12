@@ -247,6 +247,43 @@ function getBestImageUrl(img) {
 }
 
 /**
+ * Extract structured property data from Zillow's SSR JSON payload
+ * Falls back gracefully if the JSON structure isn't found
+ * @returns {Object|null} - Extracted SSR data or null
+ */
+function extractFromSSRPayload() {
+  try {
+    const scripts = document.querySelectorAll('script[type="application/json"]');
+    for (const script of scripts) {
+      try {
+        const data = JSON.parse(script.textContent);
+        if (data.props && data.props.pageProps && data.props.pageProps.componentProps) {
+          const cache = JSON.parse(data.props.pageProps.componentProps.gdpClientCache);
+          const keys = Object.keys(cache);
+          for (const key of keys) {
+            if (key.includes('Priority')) {
+              const property = cache[key].property;
+              if (property) {
+                return {
+                  zestimate: typeof property.zestimate === 'number' ? property.zestimate : null,
+                  lastSoldPrice: typeof property.lastSoldPrice === 'number' ? property.lastSoldPrice : null,
+                  lastSoldDate: typeof property.dateSoldString === 'string' ? property.dateSoldString : null,
+                };
+              }
+            }
+          }
+        }
+      } catch (_parseError) {
+        // Skip scripts that don't match expected structure
+      }
+    }
+  } catch (_outerError) {
+    console.warn("Could not extract SSR payload data");
+  }
+  return null;
+}
+
+/**
  * Extract property data from Zillow listing page
  * @returns {Object} - Extracted property data
  */
@@ -298,6 +335,9 @@ function extractZillowData() {
       if (match) yearBuilt = Number.parseInt(match[0], 10);
     }
 
+    // Extract reference data from SSR JSON payload
+    const ssrData = extractFromSSRPayload();
+
     return {
       address: addressParts.address,
       city: addressParts.city,
@@ -311,6 +351,9 @@ function extractZillowData() {
       yearBuilt: yearBuilt,
       listingUrl: window.location.href,
       imageUrl: extractImageUrl(),
+      zestimate: ssrData ? ssrData.zestimate : null,
+      lastSoldPrice: ssrData ? ssrData.lastSoldPrice : null,
+      lastSoldDate: ssrData ? ssrData.lastSoldDate : null,
     };
   } catch (error) {
     console.error("Error extracting Zillow data:", error);

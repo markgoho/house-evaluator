@@ -2,6 +2,17 @@
 	import type { House } from '$lib/types';
 
 	let { house }: { house: House } = $props();
+
+	const zestimateDifference = $derived.by(() => {
+		if (house.zestimate == undefined || house.price == undefined || house.price === 0) {
+			return undefined;
+		}
+		return Math.round(((house.price - house.zestimate) / house.zestimate) * 100);
+	});
+
+	const hasReferenceData = $derived(
+		house.zestimate != undefined || house.lastSoldPrice != undefined
+	);
 </script>
 
 <section class="card details-card">
@@ -50,6 +61,40 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if hasReferenceData}
+		<div class="reference-section">
+			<h3 class="reference-title">Zillow Reference Data</h3>
+			<div class="reference-grid">
+				{#if house.zestimate != undefined}
+					<div class="reference-item">
+						<span class="detail-label">Zestimate</span>
+						<span class="detail-value">${house.zestimate.toLocaleString()}</span>
+						{#if zestimateDifference !== undefined}
+							<span class="comparison-badge" class:over-zestimate={zestimateDifference > 0} class:under-zestimate={zestimateDifference < 0} class:at-zestimate={zestimateDifference === 0}>
+								{#if zestimateDifference > 0}
+									{zestimateDifference}% over
+								{:else if zestimateDifference < 0}
+									{Math.abs(zestimateDifference)}% under
+								{:else}
+									At Zestimate
+								{/if}
+							</span>
+						{/if}
+					</div>
+				{/if}
+				{#if house.lastSoldPrice != undefined}
+					<div class="reference-item">
+						<span class="detail-label">Last Sold Price</span>
+						<span class="detail-value">${house.lastSoldPrice.toLocaleString()}</span>
+						{#if house.lastSoldDate != undefined}
+							<span class="sold-date">{house.lastSoldDate}</span>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	{#if house.listingUrl}
 		<a href={house.listingUrl} target="_blank" rel="noopener noreferrer" class="listing-link">
@@ -183,5 +228,61 @@
 		.details-grid {
 			grid-template-columns: repeat(2, 1fr);
 		}
+	}
+
+	.reference-section {
+		margin-bottom: var(--spacing-lg);
+		padding-top: var(--spacing-lg);
+		border-top: 1px solid var(--color-border-light);
+	}
+
+	.reference-title {
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--color-text-secondary);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		margin-bottom: var(--spacing-md);
+	}
+
+	.reference-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+		gap: var(--spacing-lg);
+	}
+
+	.reference-item {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-xs);
+	}
+
+	.comparison-badge {
+		display: inline-block;
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		padding: 2px var(--spacing-sm);
+		border-radius: var(--radius-full);
+		width: fit-content;
+	}
+
+	.over-zestimate {
+		background: var(--color-error-light);
+		color: var(--color-error);
+	}
+
+	.under-zestimate {
+		background: var(--color-success-light);
+		color: var(--color-success);
+	}
+
+	.at-zestimate {
+		background: var(--color-border-light);
+		color: var(--color-text-secondary);
+	}
+
+	.sold-date {
+		font-size: var(--font-size-xs);
+		color: var(--color-text-muted);
 	}
 </style>

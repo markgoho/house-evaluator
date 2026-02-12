@@ -18,6 +18,12 @@ describe('PropertyDetailsCard', () => {
 		bedrooms: 3,
 		bathrooms: 2,
 		yearBuilt: 1990,
+		// eslint-disable-next-line unicorn/no-null -- Test mock matches Firestore null convention
+		zestimate: null,
+		// eslint-disable-next-line unicorn/no-null -- Test mock matches Firestore null convention
+		lastSoldPrice: null,
+		// eslint-disable-next-line unicorn/no-null -- Test mock matches Firestore null convention
+		lastSoldDate: null,
 		listingUrl: 'https://zillow.com/property/123',
 		photoUrls: [],
 		notes: 'Great location!',

@@ -20,6 +20,9 @@ const FIELD_LABELS = {
   yearBuilt: "Year Built",
   listingUrl: "Listing URL",
   imageUrl: "Property Photo",
+  zestimate: "Zestimate",
+  lastSoldPrice: "Last Sold Price",
+  lastSoldDate: "Last Sold Date",
 };
 
 /**
@@ -33,6 +36,8 @@ function formatValue(key, value) {
 
   switch (key) {
     case "price":
+    case "zestimate":
+    case "lastSoldPrice":
       return `$${value.toLocaleString()}`;
     case "squareFeet":
     case "lotSize":

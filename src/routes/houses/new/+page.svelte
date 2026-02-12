@@ -13,6 +13,23 @@
 	// Image URL from extension (derived from URL params)
 	const sourceImageUrl = $derived(page.url.searchParams.get('imageUrl') ?? undefined);
 
+	// Reference data from extension (read-only, not part of form)
+	const zestimate = $derived.by(() => {
+		const value = page.url.searchParams.get('zestimate');
+		if (value === null) return undefined;
+		const parsed = Number.parseInt(value, 10);
+		return Number.isNaN(parsed) ? undefined : parsed;
+	});
+
+	const lastSoldPrice = $derived.by(() => {
+		const value = page.url.searchParams.get('lastSoldPrice');
+		if (value === null) return undefined;
+		const parsed = Number.parseInt(value, 10);
+		return Number.isNaN(parsed) ? undefined : parsed;
+	});
+
+	const lastSoldDate = $derived(page.url.searchParams.get('lastSoldDate') ?? undefined);
+
 	// Parse URL parameters from page state (reactive)
 	const initialFormData = $derived.by(() => {
 		const params = page.url.searchParams;
@@ -101,6 +118,12 @@
 				data: {
 					familyId: $userProfileStore.profile.familyId,
 					...formData,
+					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
+					zestimate: zestimate ?? null,
+					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
+					lastSoldPrice: lastSoldPrice ?? null,
+					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
+					lastSoldDate: lastSoldDate ?? null,
 					photoUrls: [],
 					createdBy: $authStore.user.uid
 				},
