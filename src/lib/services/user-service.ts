@@ -20,10 +20,14 @@ export async function createOrUpdateUser(
     Object.entries(data).filter(([_, value]) => value !== undefined),
   );
 
+  // Check if user already exists to preserve createdAt
+  const existingDocument = await getDoc(userRef);
+
   const userData = {
     ...cleanedData,
     updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
+    // Only set createdAt on true creation, not on merge updates
+    ...(existingDocument.exists() ? {} : { createdAt: serverTimestamp() }),
   };
 
   await setDoc(userRef, userData, { merge: true });
