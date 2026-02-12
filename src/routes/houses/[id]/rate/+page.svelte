@@ -7,6 +7,7 @@
 	import { criteriaStore } from '$lib/stores/criteria-store';
 	import { getHouse } from '$lib/services/house-service';
 	import { createOrUpdateRating, getRatingByUserAndHouse } from '$lib/services/rating-service';
+	import { RATING } from '$lib/constants';
 	import type { House, RatingInput } from '$lib/types';
 
 	let house = $state<House | null>(null);
@@ -119,7 +120,7 @@
 			<form onsubmit={handleSubmit} class="rating-form">
 				<div class="criteria-section">
 					<h2>Rate Each Criterion</h2>
-					<p class="section-description">Rate each aspect from -5 (poor) to +5 (excellent), with 0 as baseline/adequate</p>
+					<p class="section-description">Rate each aspect from 0 (poor) to 5 (excellent)</p>
 
 					{#if $criteriaStore.loading}
 						<div class="loading">Loading criteria...</div>
@@ -150,22 +151,18 @@
 										<input
 											type="range"
 											id={`criterion-${criterion.id}`}
-											min="-5"
-											max="5"
+											min={RATING.MIN}
+											max={RATING.MAX}
 											step="1"
 											bind:value={criteriaScores[criterion.id]}
 											class="slider"
 										/>
 										<div class="slider-labels">
-											<span>-5</span>
+											<span>{RATING.MIN}</span>
 											<span class="current-score">
-												{#if (criteriaScores[criterion.id] ?? 0) > 0}
-													+{criteriaScores[criterion.id]}
-												{:else}
-													{criteriaScores[criterion.id] ?? 0}
-												{/if}
+												{criteriaScores[criterion.id] ?? 0}
 											</span>
-											<span>+5</span>
+											<span>{RATING.MAX}</span>
 										</div>
 									</div>
 								</div>
