@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/stores/auth-store';
 	import { userProfileStore } from '$lib/stores/user-profile-store';
-	import { createOrUpdateUser } from '$lib/services/user-service';
+	import { createOrUpdateUser, getUser } from '$lib/services/user-service';
 	import { getFamily } from '$lib/services/family-service';
 	import { createJoinRequest } from '$lib/services/join-request-service';
 	import type { UserInput } from '$lib/types';
@@ -11,6 +11,7 @@
 	let familyId = $state('');
 	let loading = $state(false);
 	let error = $state<string | null>(null);
+	let profileCreationAttempted = false;
 
 	onMount(() => {
 		const unsubscribe = userProfileStore.subscribe((state) => {
@@ -25,8 +26,16 @@
 				return;
 			}
 
+			// Redirect if user has a profile but no family — they belong on this page
+			// but should NOT have their profile recreated
+			if (state.profile) {
+				return;
+			}
+
 			// Create user profile if it doesn't exist (only for authenticated users with no profile)
-			if ($authStore.user && !state.profile) {
+			// Guard with flag to prevent multiple concurrent attempts from subscription re-emissions
+			if ($authStore.user && !profileCreationAttempted) {
+				profileCreationAttempted = true;
 				createInitialUserProfile();
 			}
 		});
@@ -34,21 +43,30 @@
 		return unsubscribe;
 	});
 
-	async function createInitialUserProfile() {
+	async function createInitialUserProfile(): Promise<void> {
 		if (!$authStore.user) return;
 
 		try {
+			// Defense in depth: check Firestore directly before writing.
+			// The store may briefly show profile as undefined during initialization,
+			// but the document may already exist. Never overwrite an existing profile.
+			const existingUser = await getUser($authStore.user.uid);
+			if (existingUser) {
+				return;
+			}
+
 			const userData: UserInput = {
 				email: $authStore.user.email ?? '',
 				displayName: $authStore.user.displayName ?? '',
 				photoUrl: $authStore.user.photoURL ?? null,
+				// eslint-disable-next-line unicorn/no-null -- Firestore requires null for empty fields
 				familyId: null,
 				role: 'member'
 			};
 
 			await createOrUpdateUser($authStore.user.uid, userData);
-		} catch (err) {
-			console.error('Error creating user profile:', err);
+		} catch (error_) {
+			console.error('Error creating user profile:', error_);
 		}
 	}
 
