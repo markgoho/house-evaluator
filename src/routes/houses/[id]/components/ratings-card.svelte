@@ -42,10 +42,11 @@
 		<div class="score-display">
 			<div
 				class="score-badge"
-				class:positive={averageScore > 0}
-				class:negative={averageScore < 0}
+				class:score-low={averageScore < 2}
+				class:score-mid={averageScore >= 2 && averageScore < 4}
+				class:score-high={averageScore >= 4}
 			>
-				<span class="score-value">{averageScore > 0 ? '+' : ''}{averageScore}</span>
+				<span class="score-value">{averageScore}</span>
 				<span class="score-max">/ {RATING.MAX}</span>
 			</div>
 			<p class="score-meta">
@@ -84,10 +85,11 @@
 					</div>
 					<div
 						class="rating-score"
-						class:positive={rating.overallScore > 0}
-						class:negative={rating.overallScore < 0}
+						class:score-low={rating.overallScore < 2}
+						class:score-mid={rating.overallScore >= 2 && rating.overallScore < 4}
+						class:score-high={rating.overallScore >= 4}
 					>
-						{rating.overallScore > 0 ? '+' : ''}{rating.overallScore}
+						{rating.overallScore}
 					</div>
 				</div>
 				{#if rating.comments}
@@ -188,12 +190,16 @@
 		color: var(--color-text-primary);
 	}
 
-	.score-badge.positive .score-value {
-		color: var(--color-success);
+	.score-badge.score-low .score-value {
+		color: var(--color-error);
 	}
 
-	.score-badge.negative .score-value {
-		color: var(--color-error);
+	.score-badge.score-mid .score-value {
+		color: var(--color-text-primary);
+	}
+
+	.score-badge.score-high .score-value {
+		color: var(--color-success);
 	}
 
 	.score-max {
@@ -260,12 +266,16 @@
 		color: var(--color-text-primary);
 	}
 
-	.rating-score.positive {
-		color: var(--color-success);
+	.rating-score.score-low {
+		color: var(--color-error);
 	}
 
-	.rating-score.negative {
-		color: var(--color-error);
+	.rating-score.score-mid {
+		color: var(--color-text-primary);
+	}
+
+	.rating-score.score-high {
+		color: var(--color-success);
 	}
 
 	.rating-comments {
