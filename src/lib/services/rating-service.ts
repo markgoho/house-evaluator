@@ -11,9 +11,10 @@ import {
 } from "firebase/firestore";
 import { getFirestoreInstance } from "$lib/firebase/get-firestore-instance";
 import type { Rating, RatingInput, RatingUpdate, Criterion } from "$lib/types";
+import { normalizeRatingScores } from "./normalize-rating-scores";
 
 // Calculates weighted average score
-// Scores range from -5 (poor) to +5 (excellent), with 0 as baseline/adequate
+// Scores range from 0 (poor) to 5 (excellent)
 function calculateOverallScore(
   criteriaScores: Record<string, number>,
   criteria: Criterion[],
@@ -53,6 +54,7 @@ export async function createOrUpdateRating(
   const ratingData = {
     ...data,
     overallScore,
+    scaleVersion: 2,
     updatedAt: serverTimestamp(),
   };
 
@@ -86,12 +88,13 @@ export async function getRatingsForHouse(
 
   return snapshot.docs.map((doc) => {
     const data = doc.data();
-    return {
+    const rating = {
       id: doc.id,
       ...data,
       createdAt: data.createdAt?.toDate() ?? new Date(),
       updatedAt: data.updatedAt?.toDate() ?? new Date(),
     } as Rating;
+    return normalizeRatingScores(rating);
   });
 }
 
@@ -119,12 +122,13 @@ export async function getRatingByUserAndHouse(
   }
 
   const data = doc.data();
-  return {
+  const rating = {
     id: doc.id,
     ...data,
     createdAt: data.createdAt?.toDate() ?? new Date(),
     updatedAt: data.updatedAt?.toDate() ?? new Date(),
   } as Rating;
+  return normalizeRatingScores(rating);
 }
 
 export async function deleteRating(
