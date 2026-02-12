@@ -29,12 +29,10 @@ export const NO_FAMILY_REQUIRED_PAGES: readonly string[] = [ROUTES.SETUP, ROUTES
 // ==================== RATING SYSTEM ====================
 
 export const RATING = {
-	MIN: -5,
+	MIN: 0,
 	MAX: 5,
-	BASELINE: 0,
 	// Descriptions
 	MIN_LABEL: 'Poor',
-	BASELINE_LABEL: 'Adequate',
 	MAX_LABEL: 'Excellent'
 } as const;
 
