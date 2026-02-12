@@ -12,16 +12,26 @@
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 
-	onMount(async () => {
-		// Redirect if user already has a family
-		if ($userProfileStore.profile?.familyId) {
-			goto('/');
-		}
+	onMount(() => {
+		const unsubscribe = userProfileStore.subscribe((state) => {
+			// Wait for stores to finish loading before taking any action
+			if ($authStore.loading || !state.initialized) {
+				return;
+			}
 
-		// Create user profile if it doesn't exist
-		if ($authStore.user && !$userProfileStore.profile) {
-			await createInitialUserProfile();
-		}
+			// Redirect if user already has a family
+			if (state.profile?.familyId) {
+				goto('/');
+				return;
+			}
+
+			// Create user profile if it doesn't exist (only for authenticated users with no profile)
+			if ($authStore.user && !state.profile) {
+				createInitialUserProfile();
+			}
+		});
+
+		return unsubscribe;
 	});
 
 	async function createInitialUserProfile() {
