@@ -1,8 +1,48 @@
 <script lang="ts">
 	import { housesStore } from '$lib/stores/houses-store';
+	import { userProfileReady } from '$lib/stores/user-profile-store';
 	import { goto } from '$app/navigation';
 	import { LoadingSpinner, EmptyState, ErrorState, PageHeader } from '$lib/components/ui';
-	import { ROUTES } from '$lib/constants';
+	import { ROUTES, RATING } from '$lib/constants';
+	import { getRatingsForFamily } from '$lib/services/get-ratings-for-family';
+	import type { Rating } from '$lib/types';
+
+	let ratings = $state<Rating[]>([]);
+	let ratingsLoaded = $state(false);
+
+	const averageScores = $derived.by(() => {
+		const scores = new Map<string, number>();
+		const groups = new Map<string, number[]>();
+
+		for (const rating of ratings) {
+			const existing = groups.get(rating.houseId);
+			if (existing) {
+				existing.push(rating.overallScore);
+			} else {
+				groups.set(rating.houseId, [rating.overallScore]);
+			}
+		}
+
+		for (const [houseId, houseScores] of groups) {
+			const average =
+				Math.round(
+					(houseScores.reduce((sum, score) => sum + score, 0) / houseScores.length) * 10
+				) / 10;
+			scores.set(houseId, average);
+		}
+
+		return scores;
+	});
+
+	$effect(() => {
+		const familyId = $userProfileReady.profile?.familyId;
+		if (familyId) {
+			getRatingsForFamily(familyId).then((result) => {
+				ratings = result;
+				ratingsLoaded = true;
+			});
+		}
+	});
 
 	function navigateToHouse(houseId: string) {
 		goto(ROUTES.houseDetail(houseId));
@@ -119,6 +159,27 @@
 						<div class="house-content">
 							<h3 class="house-address">{house.address}</h3>
 							<p class="house-location">{house.city}, {house.state} {house.zipCode}</p>
+
+							{#if averageScores.has(house.id)}
+								{@const score = averageScores.get(house.id)}
+								<div class="house-rating">
+									<span
+										class="rating-badge"
+										class:score-low={score !== undefined && score < 2}
+										class:score-mid={score !== undefined && score >= 2 && score < 4}
+										class:score-high={score !== undefined && score >= 4}
+									>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+											<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+										</svg>
+										{score} / {RATING.MAX}
+									</span>
+								</div>
+							{:else if ratingsLoaded}
+								<div class="house-rating">
+									<span class="rating-badge no-rating">Not rated</span>
+								</div>
+							{/if}
 
 							<div class="house-details">
 								{#if house.price}
@@ -250,7 +311,39 @@
 	.house-location {
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
+		margin-bottom: var(--spacing-sm);
+	}
+
+	.house-rating {
 		margin-bottom: var(--spacing-md);
+	}
+
+	.rating-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-xs);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		padding: 2px var(--spacing-sm);
+		border-radius: var(--radius-md);
+		background: var(--color-background);
+	}
+
+	.rating-badge.score-low {
+		color: var(--color-error);
+	}
+
+	.rating-badge.score-mid {
+		color: var(--color-text-primary);
+	}
+
+	.rating-badge.score-high {
+		color: var(--color-success);
+	}
+
+	.rating-badge.no-rating {
+		color: var(--color-text-muted);
+		font-weight: 400;
 	}
 
 	.house-details {
