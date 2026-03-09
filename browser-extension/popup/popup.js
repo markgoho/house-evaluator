@@ -23,6 +23,7 @@ const FIELD_LABELS = {
   zestimate: "Zestimate",
   lastSoldPrice: "Last Sold Price",
   lastSoldDate: "Last Sold Date",
+  taxAssessedValue: "Tax Assessed Value",
 };
 
 /**
@@ -38,6 +39,7 @@ function formatValue(key, value) {
     case "price":
     case "zestimate":
     case "lastSoldPrice":
+    case "taxAssessedValue":
       return `$${value.toLocaleString()}`;
     case "squareFeet":
     case "lotSize":

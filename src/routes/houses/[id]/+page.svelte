@@ -5,16 +5,27 @@
 	import { authStore } from '$lib/stores/auth-store';
 	import { getHouse, deleteHouse } from '$lib/services/house-service';
 	import { getRatingsForHouse } from '$lib/services/rating-service';
-	import type { House, Rating } from '$lib/types';
+	import { getFamily } from '$lib/services/family-service';
+	import { updateMortgageSettings } from '$lib/services/update-mortgage-settings';
+	import { getMortgageRate } from '$lib/services/get-mortgage-rate';
+	import type { House, Rating, MortgageSettings } from '$lib/types';
 	import { LoadingSpinner, ErrorState } from '$lib/components/ui';
 	import HouseDetailHeader from './components/house-detail-header.svelte';
 	import PropertyDetailsCard from './components/property-details-card.svelte';
 	import RatingsCard from './components/ratings-card.svelte';
 	import PhotosCard from './components/photos-card.svelte';
+	import MonthlyCostCard from './components/monthly-cost-card.svelte';
 	import { ROUTES } from '$lib/constants';
+
+	const DEFAULT_MORTGAGE_SETTINGS: MortgageSettings = {
+		downPaymentPercent: 20,
+		mortgageRatePercent: 6.5,
+		loanTermYears: 30
+	};
 
 	let house = $state<House | null>(null);
 	let ratings = $state<Rating[]>([]);
+	let mortgageSettings = $state<MortgageSettings>(DEFAULT_MORTGAGE_SETTINGS);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
@@ -53,14 +64,30 @@
 			return;
 		}
 
+		const familyId = $userProfileStore.profile.familyId;
+
 		try {
-			const [houseData, ratingsData] = await Promise.all([
-				getHouse($userProfileStore.profile.familyId, houseId),
-				getRatingsForHouse($userProfileStore.profile.familyId, houseId)
+			const [houseData, ratingsData, familyData] = await Promise.all([
+				getHouse(familyId, houseId),
+				getRatingsForHouse(familyId, houseId),
+				getFamily(familyId)
 			]);
 
 			house = houseData;
 			ratings = ratingsData;
+
+			// Use family's mortgage settings if available, otherwise use defaults
+			if (familyData?.mortgageSettings !== undefined) {
+				mortgageSettings = familyData.mortgageSettings;
+			} else {
+				// Try to get the current FRED rate as the default
+				getMortgageRate().then((rate) => {
+					mortgageSettings = { ...DEFAULT_MORTGAGE_SETTINGS, mortgageRatePercent: rate };
+				}).catch(() => {
+					// Keep default settings on error
+				});
+			}
+
 			loading = false;
 		} catch (err) {
 			console.error('Error loading house:', err);
@@ -84,6 +111,19 @@
 			alert('Failed to delete house');
 		}
 	}
+
+	async function handleUpdateSettings(settings: MortgageSettings): Promise<void> {
+		mortgageSettings = settings;
+
+		const familyId = $userProfileStore.profile?.familyId;
+		if (familyId !== undefined && familyId !== null) {
+			try {
+				await updateMortgageSettings({ familyId, settings });
+			} catch (err) {
+				console.error('Error saving mortgage settings:', err);
+			}
+		}
+	}
 </script>
 
 <div class="house-detail-page">
@@ -101,6 +141,11 @@
 			<div class="content-grid">
 				<PropertyDetailsCard {house} />
 				<RatingsCard {ratings} {averageScore} {houseId} />
+				<MonthlyCostCard
+					{house}
+					{mortgageSettings}
+					onupdatesettings={handleUpdateSettings}
+				/>
 				<PhotosCard photoUrls={house.photoUrls} address={house.address} />
 			</div>
 		{/if}

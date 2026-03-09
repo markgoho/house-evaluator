@@ -14,6 +14,7 @@ export interface House {
   yearBuilt: number | null;
   price: number | null;
   pricePerSqFt: number | null; // auto-calculated
+  taxAssessedValue: number | null; // from Zillow's "Tax assessed value"
   // Listing reference data (scraped from listing site, read-only)
   zestimate: number | null;
   lastSoldPrice: number | null;
@@ -37,5 +38,5 @@ export type HouseUpdate = Partial<HouseInput>;
 // Form data that the HouseForm component collects
 export type HouseFormData = Omit<
   HouseInput,
-  "familyId" | "createdBy" | "photoUrls" | "zestimate" | "lastSoldPrice" | "lastSoldDate"
+  "familyId" | "createdBy" | "photoUrls" | "zestimate" | "lastSoldPrice" | "lastSoldDate" | "taxAssessedValue"
 >;

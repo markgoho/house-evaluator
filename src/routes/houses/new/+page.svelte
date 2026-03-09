@@ -30,6 +30,13 @@
 
 	const lastSoldDate = $derived(page.url.searchParams.get('lastSoldDate') ?? undefined);
 
+	const taxAssessedValue = $derived.by(() => {
+		const value = page.url.searchParams.get('taxAssessedValue');
+		if (value === null) return undefined;
+		const parsed = Number.parseInt(value, 10);
+		return Number.isNaN(parsed) ? undefined : parsed;
+	});
+
 	// Parse URL parameters from page state (reactive)
 	const initialFormData = $derived.by(() => {
 		const params = page.url.searchParams;
@@ -118,6 +125,8 @@
 				data: {
 					familyId: $userProfileStore.profile.familyId,
 					...formData,
+					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
+					taxAssessedValue: taxAssessedValue ?? null,
 					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
 					zestimate: zestimate ?? null,
 					// eslint-disable-next-line unicorn/no-null -- Firestore requires null for missing values
