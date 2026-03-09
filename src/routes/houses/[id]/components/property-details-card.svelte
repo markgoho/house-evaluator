@@ -20,7 +20,7 @@
 	<div class="details-grid">
 		{#if house.price}
 			<div class="detail-item featured">
-				<span class="detail-label">Price</span>
+				<span class="detail-label">List Price</span>
 				<span class="detail-value">${house.price.toLocaleString()}</span>
 			</div>
 		{/if}
