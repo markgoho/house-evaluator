@@ -24,8 +24,8 @@ jobs:
         run: bun run test:run
       - name: Build
         run: bun run build
-        env:
-          VITE_FRED_API_KEY: ${{ secrets.VITE_FRED_API_KEY }}
+      - name: Install functions dependencies
+        run: cd functions && npm install
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
