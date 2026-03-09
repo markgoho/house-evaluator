@@ -24,6 +24,8 @@ describe('PropertyDetailsCard', () => {
 		lastSoldPrice: null,
 		// eslint-disable-next-line unicorn/no-null -- Test mock matches Firestore null convention
 		lastSoldDate: null,
+		// eslint-disable-next-line unicorn/no-null -- Test mock matches Firestore null convention
+		taxAssessedValue: null,
 		listingUrl: 'https://zillow.com/property/123',
 		photoUrls: [],
 		notes: 'Great location!',

@@ -335,6 +335,16 @@ function extractZillowData() {
       if (match) yearBuilt = Number.parseInt(match[0], 10);
     }
 
+    // Extract tax assessed value — look for "Tax assessed value: $XXX,XXX"
+    let taxAssessedValue = null;
+    const taxAssessedText = findTextByPattern(/Tax\s+assessed\s+value/i);
+    if (taxAssessedText) {
+      const taxMatch = taxAssessedText.match(/\$\s*([\d,]+)/);
+      if (taxMatch) {
+        taxAssessedValue = Number.parseInt(taxMatch[1].replace(/,/g, ""), 10);
+      }
+    }
+
     // Extract reference data from SSR JSON payload
     const ssrData = extractFromSSRPayload();
 
@@ -351,6 +361,7 @@ function extractZillowData() {
       yearBuilt: yearBuilt,
       listingUrl: window.location.href,
       imageUrl: extractImageUrl(),
+      taxAssessedValue: taxAssessedValue,
       zestimate: ssrData ? ssrData.zestimate : null,
       lastSoldPrice: ssrData ? ssrData.lastSoldPrice : null,
       lastSoldDate: ssrData ? ssrData.lastSoldDate : null,
