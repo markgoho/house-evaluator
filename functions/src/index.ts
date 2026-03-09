@@ -14,7 +14,7 @@ const fredApiKey = defineSecret("FRED_API_KEY");
 setGlobalOptions({maxInstances: 10});
 
 export const mortgagerate = onRequest(
-  {region: "us-east1", cors: true, secrets: [fredApiKey]},
+  {region: "us-east1", cors: true, invoker: "public", secrets: [fredApiKey]},
   async (request, response) => {
     try {
       const url = new URL(FRED_API_BASE);
