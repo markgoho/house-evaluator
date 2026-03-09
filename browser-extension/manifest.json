@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "House Evaluator Helper",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Extract property data from listings and auto-fill House Evaluator",
   "permissions": ["activeTab", "scripting"],
   "action": {
