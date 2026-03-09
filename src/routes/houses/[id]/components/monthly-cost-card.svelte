@@ -58,16 +58,22 @@
 				<span class="cost-label">Principal & Interest</span>
 				<span class="cost-amount">{formatCurrency(breakdown.monthlyPrincipalAndInterest)}</span>
 			</div>
-			{#if taxRates !== undefined && house.taxAssessedValue !== null}
+			{#if taxRates !== undefined && house.taxAssessedValue !== null && house.taxAssessedValue !== undefined}
 				<div class="cost-line">
-					<span class="cost-label">Property Tax (County + Town)</span>
+					<span class="cost-label">
+						Property Tax
+						<span class="rate-detail">County {taxRates.countyTaxRate} + Town {taxRates.townTaxRate} per $1k</span>
+					</span>
 					<span class="cost-amount">{formatCurrency(breakdown.monthlyPropertyTax)}</span>
 				</div>
 				<div class="cost-line">
-					<span class="cost-label">School Tax ({taxRates.schoolDistrict})</span>
+					<span class="cost-label">
+						School Tax
+						<span class="rate-detail">{taxRates.schoolDistrict} — {taxRates.schoolTaxRate} per $1k</span>
+					</span>
 					<span class="cost-amount">{formatCurrency(breakdown.monthlySchoolTax)}</span>
 				</div>
-			{:else if house.taxAssessedValue === null}
+			{:else if house.taxAssessedValue === null || house.taxAssessedValue === undefined}
 				<p class="tax-note">Tax assessed value not available — tax estimates excluded.</p>
 			{:else}
 				<p class="tax-note">Tax rates not available for {house.city}, {house.state}.</p>
@@ -89,7 +95,7 @@
 					<span class="assumption-label">Loan amount</span>
 					<span class="assumption-value">{formatCurrency(breakdown.loanAmount)}</span>
 				</div>
-				{#if house.taxAssessedValue !== null}
+				{#if house.taxAssessedValue !== null && house.taxAssessedValue !== undefined}
 					<div class="assumption-item">
 						<span class="assumption-label">Tax assessed value</span>
 						<span class="assumption-value">{formatCurrency(house.taxAssessedValue)}</span>
@@ -143,7 +149,7 @@
 	}
 
 	.total-label {
-		font-size: var(--font-size-xs);
+		font-size: var(--font-size-sm);
 		color: var(--color-text-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
@@ -151,7 +157,7 @@
 
 	.total-value {
 		font-family: var(--font-display);
-		font-size: var(--font-size-2xl);
+		font-size: var(--font-size-3xl);
 		font-weight: 700;
 		color: var(--color-primary);
 	}
@@ -172,12 +178,20 @@
 	}
 
 	.cost-label {
-		font-size: var(--font-size-sm);
+		font-size: var(--font-size-base);
 		color: var(--color-text-secondary);
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.rate-detail {
+		font-size: var(--font-size-xs);
+		color: var(--color-text-muted);
 	}
 
 	.cost-amount {
-		font-size: var(--font-size-sm);
+		font-size: var(--font-size-base);
 		font-weight: 600;
 		color: var(--color-text-primary);
 	}
@@ -194,7 +208,7 @@
 	}
 
 	.assumptions-title {
-		font-size: var(--font-size-xs);
+		font-size: var(--font-size-sm);
 		font-weight: 600;
 		color: var(--color-text-muted);
 		text-transform: uppercase;
@@ -211,7 +225,7 @@
 	.assumption-item {
 		display: flex;
 		justify-content: space-between;
-		font-size: var(--font-size-xs);
+		font-size: var(--font-size-sm);
 	}
 
 	.assumption-label {
