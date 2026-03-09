@@ -16,16 +16,19 @@
 	} = $props();
 
 	let showSettingsModal = $state(false);
+	let priceOverride = $state<number | null>(null);
+
+	const purchasePrice: number | null = $derived(priceOverride ?? house.price);
 
 	const taxRates: TaxRateEntry | undefined = $derived(
 		findTaxRates({ city: house.city, state: house.state })
 	);
 
 	const breakdown: MonthlyCostBreakdown | undefined = $derived.by(() => {
-		if (house.price === null) return undefined;
+		if (purchasePrice === null) return undefined;
 
 		return calculateMonthlyCost({
-			price: house.price,
+			price: purchasePrice,
 			taxAssessedValue: house.taxAssessedValue ?? undefined,
 			mortgageSettings,
 			taxRates
@@ -45,7 +48,7 @@
 <section class="card monthly-cost-card">
 	<h2 class="card-title">Monthly Cost Estimate</h2>
 
-	{#if house.price === null}
+	{#if purchasePrice === null}
 		<p class="no-data-message">No listing price available to calculate monthly costs.</p>
 	{:else if breakdown !== undefined}
 		<div class="total-cost">
@@ -83,6 +86,30 @@
 		<div class="assumptions">
 			<h3 class="assumptions-title">Assumptions</h3>
 			<div class="assumption-list">
+				<div class="assumption-item">
+					<label for="purchase-price" class="assumption-label">Purchase price</label>
+					<div class="price-input-wrapper">
+						<span class="price-prefix">$</span>
+						<input
+							id="purchase-price"
+							type="number"
+							min="0"
+							step="1000"
+							class="price-input"
+							value={purchasePrice}
+							oninput={(event) => {
+								const value = event.currentTarget.valueAsNumber;
+								priceOverride = Number.isNaN(value) ? null : value;
+							}}
+						/>
+					</div>
+				</div>
+				{#if house.price !== null && priceOverride !== null && priceOverride !== house.price}
+					<div class="assumption-item">
+						<span class="assumption-label">List price</span>
+						<span class="assumption-value list-price">{formatCurrency(house.price)}</span>
+					</div>
+				{/if}
 				<div class="assumption-item">
 					<span class="assumption-label">Down payment</span>
 					<span class="assumption-value">{mortgageSettings.downPaymentPercent}% ({formatCurrency(breakdown.downPayment)})</span>
@@ -235,6 +262,51 @@
 	.assumption-value {
 		color: var(--color-text-secondary);
 		font-weight: 500;
+	}
+
+	.list-price {
+		text-decoration: line-through;
+		color: var(--color-text-muted);
+	}
+
+	.price-input-wrapper {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+	}
+
+	.price-prefix {
+		font-size: var(--font-size-sm);
+		color: var(--color-text-muted);
+		font-weight: 500;
+	}
+
+	.price-input {
+		width: 110px;
+		padding: 2px var(--spacing-xs);
+		border: 1px solid var(--color-border-light);
+		border-radius: var(--radius-sm);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		background: var(--color-background);
+		text-align: right;
+	}
+
+	.price-input:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+	}
+
+	/* Hide number input spinners */
+	.price-input::-webkit-inner-spin-button,
+	.price-input::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	.price-input {
+		-moz-appearance: textfield;
 	}
 
 	.edit-settings-button {
