@@ -1,0 +1,40 @@
+/**
+ * Monroe County-area zip code to primary town mapping.
+ * Some zip codes cross town boundaries, so this uses the primary/majority town.
+ */
+export const ZIP_CODE_TO_TOWN: Record<string, string> = {
+	"14450": "Perinton",
+	"14467": "Henrietta",
+	"14468": "Greece",
+	"14502": "Penfield",
+	"14514": "Chili",
+	"14526": "Penfield",
+	"14534": "Pittsford",
+	"14559": "Chili",
+	"14564": "Victor",
+	"14580": "Webster",
+	"14586": "Henrietta",
+	"14604": "Rochester",
+	"14605": "Rochester",
+	"14606": "Gates",
+	"14607": "Rochester",
+	"14608": "Rochester",
+	"14609": "Irondequoit",
+	"14610": "Brighton",
+	"14611": "Rochester",
+	"14612": "Greece",
+	"14613": "Rochester",
+	"14614": "Rochester",
+	"14615": "Greece",
+	"14616": "Greece",
+	"14617": "Irondequoit",
+	"14618": "Brighton",
+	"14619": "Rochester",
+	"14620": "Brighton",
+	"14621": "Rochester",
+	"14622": "Irondequoit",
+	"14623": "Henrietta",
+	"14624": "Gates",
+	"14625": "Penfield",
+	"14626": "Greece"
+};

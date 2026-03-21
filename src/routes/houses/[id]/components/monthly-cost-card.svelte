@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { House, MortgageSettings } from '$lib/types';
 	import { calculateMonthlyCost, type MonthlyCostBreakdown } from '$lib/services/calculate-monthly-cost';
-	import { findTaxRates } from '$lib/services/find-tax-rates';
+	import { findTaxRatesByZipCode } from '$lib/services/find-tax-rates-by-zip-code';
 	import type { TaxRateEntry } from '$lib/config/tax-rates';
 	import MortgageSettingsModal from './mortgage-settings-modal.svelte';
 
@@ -20,16 +20,19 @@
 
 	const purchasePrice: number | null = $derived(priceOverride ?? house.price);
 
-	const taxRates: TaxRateEntry | undefined = $derived(
-		findTaxRates({ city: house.city, state: house.state })
-	);
+	const taxRates: TaxRateEntry | undefined = $derived.by(() => {
+		if (house.zipCode === null || house.zipCode === undefined) {
+			return undefined;
+		}
+
+		return findTaxRatesByZipCode({ zipCode: house.zipCode });
+	});
 
 	const breakdown: MonthlyCostBreakdown | undefined = $derived.by(() => {
 		if (purchasePrice === null) return undefined;
 
 		return calculateMonthlyCost({
 			price: purchasePrice,
-			taxAssessedValue: house.taxAssessedValue ?? undefined,
 			mortgageSettings,
 			taxRates
 		});
@@ -61,7 +64,7 @@
 				<span class="cost-label">Principal & Interest</span>
 				<span class="cost-amount">{formatCurrency(breakdown.monthlyPrincipalAndInterest)}</span>
 			</div>
-			{#if taxRates !== undefined && house.taxAssessedValue !== null && house.taxAssessedValue !== undefined}
+			{#if taxRates !== undefined}
 				<div class="cost-line">
 					<span class="cost-label">
 						Property Tax
@@ -76,10 +79,10 @@
 					</span>
 					<span class="cost-amount">{formatCurrency(breakdown.monthlySchoolTax)}</span>
 				</div>
-			{:else if house.taxAssessedValue === null || house.taxAssessedValue === undefined}
-				<p class="tax-note">Tax assessed value not available — tax estimates excluded.</p>
+			{:else if house.zipCode === null || house.zipCode === undefined}
+				<p class="tax-note">Zip code not available — tax estimates excluded.</p>
 			{:else}
-				<p class="tax-note">Tax rates not available for {house.city}, {house.state}.</p>
+				<p class="tax-note">Tax rates not available for zip code {house.zipCode}.</p>
 			{/if}
 		</div>
 
@@ -122,12 +125,6 @@
 					<span class="assumption-label">Loan amount</span>
 					<span class="assumption-value">{formatCurrency(breakdown.loanAmount)}</span>
 				</div>
-				{#if house.taxAssessedValue !== null && house.taxAssessedValue !== undefined}
-					<div class="assumption-item">
-						<span class="assumption-label">Tax assessed value</span>
-						<span class="assumption-value">{formatCurrency(house.taxAssessedValue)}</span>
-					</div>
-				{/if}
 			</div>
 		</div>
 

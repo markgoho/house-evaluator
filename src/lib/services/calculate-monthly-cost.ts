@@ -19,16 +19,14 @@ export interface MonthlyCostBreakdown {
  *   M = P[r(1+r)^n] / [(1+r)^n - 1]
  * where P = loan amount, r = monthly rate, n = total payments.
  *
- * Tax formula: (assessedValue / 1000) * ratePerThousand
+ * Tax formula: (salePrice / 1000) * ratePerThousand
  */
 export function calculateMonthlyCost({
 	price,
-	taxAssessedValue,
 	mortgageSettings,
 	taxRates
 }: {
 	price: number;
-	taxAssessedValue: number | undefined;
 	mortgageSettings: MortgageSettings;
 	taxRates: TaxRateEntry | undefined;
 }): MonthlyCostBreakdown {
@@ -55,11 +53,11 @@ export function calculateMonthlyCost({
 	let annualPropertyTax = 0;
 	let annualSchoolTax = 0;
 
-	if (taxAssessedValue !== undefined && taxRates !== undefined) {
-		const assessedValuePerThousand = taxAssessedValue / 1000;
+	if (taxRates !== undefined) {
+		const salePricePerThousand = price / 1000;
 		annualPropertyTax =
-			assessedValuePerThousand * (taxRates.countyTaxRate + taxRates.townTaxRate);
-		annualSchoolTax = assessedValuePerThousand * taxRates.schoolTaxRate;
+			salePricePerThousand * (taxRates.countyTaxRate + taxRates.townTaxRate);
+		annualSchoolTax = salePricePerThousand * taxRates.schoolTaxRate;
 	}
 
 	const monthlyPropertyTax = annualPropertyTax / 12;

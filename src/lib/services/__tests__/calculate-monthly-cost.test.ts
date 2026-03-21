@@ -23,7 +23,6 @@ describe("calculateMonthlyCost", () => {
 	it("calculates correct down payment and loan amount", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: undefined
 		});
@@ -35,7 +34,6 @@ describe("calculateMonthlyCost", () => {
 	it("calculates principal and interest using standard amortization", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: undefined
 		});
@@ -48,7 +46,6 @@ describe("calculateMonthlyCost", () => {
 	it("handles zero interest rate", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: {
 				downPaymentPercent: 20,
 				mortgageRatePercent: 0,
@@ -61,41 +58,25 @@ describe("calculateMonthlyCost", () => {
 		expect(result.monthlyPrincipalAndInterest).toBeCloseTo(666.67, 1);
 	});
 
-	it("calculates property and school taxes when rates and assessed value provided", () => {
+	it("calculates property and school taxes from the purchase price", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: 200_000,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: SAMPLE_TAX_RATES
 		});
 
-		// Annual property tax: (200,000/1000) * (9.54 + 2.85) = 200 * 12.39 = $2,478
-		expect(result.annualPropertyTax).toBeCloseTo(2478, 0);
-		expect(result.monthlyPropertyTax).toBeCloseTo(2478 / 12, 0);
+		// Annual property tax: (300,000/1000) * (9.54 + 2.85) = 300 * 12.39 = $3,717
+		expect(result.annualPropertyTax).toBeCloseTo(3717, 0);
+		expect(result.monthlyPropertyTax).toBeCloseTo(3717 / 12, 0);
 
-		// Annual school tax: (200,000/1000) * 22.5 = 200 * 22.5 = $4,500
-		expect(result.annualSchoolTax).toBe(4500);
-		expect(result.monthlySchoolTax).toBeCloseTo(4500 / 12, 0);
-	});
-
-	it("excludes taxes when assessed value is undefined", () => {
-		const result = calculateMonthlyCost({
-			price: 300_000,
-			taxAssessedValue: undefined,
-			mortgageSettings: DEFAULT_SETTINGS,
-			taxRates: SAMPLE_TAX_RATES
-		});
-
-		expect(result.monthlyPropertyTax).toBe(0);
-		expect(result.monthlySchoolTax).toBe(0);
-		expect(result.annualPropertyTax).toBe(0);
-		expect(result.annualSchoolTax).toBe(0);
+		// Annual school tax: (300,000/1000) * 22.5 = 300 * 22.5 = $6,750
+		expect(result.annualSchoolTax).toBe(6750);
+		expect(result.monthlySchoolTax).toBeCloseTo(6750 / 12, 0);
 	});
 
 	it("excludes taxes when tax rates are undefined", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: 200_000,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: undefined
 		});
@@ -107,7 +88,6 @@ describe("calculateMonthlyCost", () => {
 	it("calculates correct total monthly payment with all components", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: 200_000,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: SAMPLE_TAX_RATES
 		});
@@ -123,7 +103,6 @@ describe("calculateMonthlyCost", () => {
 	it("handles 15-year loan term", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: {
 				...DEFAULT_SETTINGS,
 				loanTermYears: 15
@@ -134,7 +113,6 @@ describe("calculateMonthlyCost", () => {
 		// 15-year P&I should be higher than 30-year
 		const thirtyYearResult = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: DEFAULT_SETTINGS,
 			taxRates: undefined
 		});
@@ -147,7 +125,6 @@ describe("calculateMonthlyCost", () => {
 	it("handles 100% down payment", () => {
 		const result = calculateMonthlyCost({
 			price: 300_000,
-			taxAssessedValue: undefined,
 			mortgageSettings: {
 				downPaymentPercent: 100,
 				mortgageRatePercent: 6.5,
